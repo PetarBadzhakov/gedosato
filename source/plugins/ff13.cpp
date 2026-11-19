@@ -10,8 +10,8 @@ FF13Plugin::~FF13Plugin() {
 }
 
 void FF13Plugin::reportStatus() {
-	Console::get().add(format("Shadow scale: %d", Settings::get().getShadowScale()));
-	Console::get().add(format("MSAA: %d samples, coverage sampling %s", Settings::get().getMSAASampleCount(), Settings::get().getEnableCoverageSampling() ? "enabled" : "disabled"));
+	Console::get().add(strFormat("Shadow scale: {}", Settings::get().getShadowScale()));
+	Console::get().add(strFormat("MSAA: {} samples, coverage sampling {}", Settings::get().getMSAASampleCount(), Settings::get().getEnableCoverageSampling() ? "enabled" : "disabled"));
 	Console::get().add("!! NOTE: This FINAL FANTASY XIII Plugin is currently in pre-alpha and HIGHLY EXPERIMENTAL");
 }
 
@@ -32,13 +32,13 @@ HRESULT FF13Plugin::redirectCreateTexture(UINT Width, UINT Height, UINT Levels, 
 		(Format == D3DFMT_D24S8 || Format == D3DFMT_R32F || Format == D3DFMT_D24X8)) {
 		Width *= Settings::get().getShadowScale();
 		Height *= Settings::get().getShadowScale();
-		SDLOG(4, " -> [FF13] scaling shadow buffer to %dx%d\n", Width, Height);
+		SDLOG(4, " -> [FF13] scaling shadow buffer to {}x{}\n", Width, Height);
 	}
 	// other rendertargets and buffers
 	else if(Pool != D3DPOOL_MANAGED && ((Width == Settings::get().getPresentWidth() && Height == Settings::get().getPresentHeight()) || (Width == 1280 && Height == 720))) {
 		Width = Settings::get().getRenderWidth();
 		Height = Settings::get().getRenderHeight();
-		SDLOG(4, " -> [FF13] scaling render texture to %dx%d\n", Width, Height);
+		SDLOG(4, " -> [FF13] scaling render texture to {}x{}\n", Width, Height);
 	}
 	else if(Settings::get().getEnableAlternativeTextureDumping() && !(Usage & D3DUSAGE_RENDERTARGET) && Width > 1 && Height > 1) {
 		HRESULT hr = GenericPlugin::redirectCreateTexture(Width, Height, Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
@@ -54,7 +54,7 @@ HRESULT FF13Plugin::redirectCreateRenderTarget(UINT Width, UINT Height, D3DFORMA
 	if((Width == Settings::get().getPresentWidth() && Height == Settings::get().getPresentHeight()) || (Width == 1280 && Height == 720)) {
 		Width = Settings::get().getRenderWidth();
 		Height = Settings::get().getRenderHeight();
-		SDLOG(4, " -> [FF13] scaling render target to %dx%d\n", Width, Height);
+		SDLOG(4, " -> [FF13] scaling render target to {}x{}\n", Width, Height);
 		if(MultiSample > 0) {
 			MultiSample = static_cast<D3DMULTISAMPLE_TYPE>(Settings::get().getMSAASampleCount());
 			if(Settings::get().getEnableCoverageSampling()) {
@@ -76,11 +76,11 @@ HRESULT FF13Plugin::redirectCreateDepthStencilSurface(UINT Width, UINT Height, D
 			RSManager::getDX9().getD3D()->CheckDeviceMultiSampleType(0, D3DDEVTYPE_HAL, Format, false, MultiSample, &quality);
 			if(quality > 0) {
 				MultisampleQuality = quality - 1;
-				SDLOG(2, "[FF13]: Enabled coverage sampling, quality level %d\n", MultisampleQuality);
+				SDLOG(2, "[FF13]: Enabled coverage sampling, quality level {}\n", MultisampleQuality);
 			}
 		}
 	}
-	SDLOG(4, " -> [FF13] setting depth stencil surface to %dx%d\n", Settings::get().getRenderWidth(), Settings::get().getRenderHeight());
+	SDLOG(4, " -> [FF13] setting depth stencil surface to {}x{}\n", Settings::get().getRenderWidth(), Settings::get().getRenderHeight());
 	return GenericPlugin::redirectCreateDepthStencilSurface(Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), Format, MultiSample, MultisampleQuality, Discard, ppSurface, pSharedHandle);
 }
 
@@ -148,7 +148,7 @@ HRESULT FF13Plugin::redirectScissorRect(CONST RECT* pRect) {
 		newRect.right = newRect.right * Settings::get().getRenderWidth() / 1280;
 		newRect.top = newRect.top * Settings::get().getRenderHeight() / 720;
 		newRect.bottom = newRect.bottom * Settings::get().getRenderHeight() / 720;
-		SDLOG(4, " -> [FF13] set scissor rect to %s\n", RectToString(&newRect));
+		SDLOG(4, " -> [FF13] set scissor rect to {}\n", RectToString(&newRect));
 		return GenericPlugin::redirectScissorRect(&newRect);
 	}
 	return GenericPlugin::redirectScissorRect(pRect);

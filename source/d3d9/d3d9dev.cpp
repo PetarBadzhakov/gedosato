@@ -25,10 +25,10 @@ HRESULT APIENTRY hkIDirect3DDevice9::Present(CONST RECT *pSourceRect, CONST RECT
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetVertexShaderConstantF(UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount) {
 	RSManager::setLatest(rsMan);
-	SDLOG(4, "SetVertexShaderConstantF: start: %u, count: %u\n", StartRegister, Vector4fCount);
+	SDLOG(4, "SetVertexShaderConstantF: start: {}, count: {}\n", StartRegister, Vector4fCount);
 	if(Settings::get().getLogLevel() > 13) {
 		for(size_t i=0; i<Vector4fCount; ++i) {
-			SDLOG(0, " - %16.10f %16.10f %16.10f %16.10f\n", pConstantData[i*4+0], pConstantData[i*4+1], pConstantData[i*4+2], pConstantData[i*4+3]);
+			SDLOG(0, " - {:16.10f} {:16.10f} {:16.10f} {:16.10f}\n", pConstantData[i*4+0], pConstantData[i*4+1], pConstantData[i*4+2], pConstantData[i*4+3]);
 		}
 	}
 	return rsMan->redirectSetVertexShaderConstantF(StartRegister, pConstantData, Vector4fCount);
@@ -36,31 +36,31 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetVertexShaderConstantF(UINT StartRegister
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget) {
 	RSManager::setLatest(rsMan);
-	SDLOG(3, "SetRenderTarget %5d, %p\n", RenderTargetIndex, pRenderTarget);
+	SDLOG(3, "SetRenderTarget {:5}, {}\n", RenderTargetIndex, pRenderTarget);
 	return rsMan->redirectSetRenderTarget(RenderTargetIndex, pRenderTarget);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetVertexShader(IDirect3DVertexShader9* pvShader) {
 	RSManager::setLatest(rsMan);
-	SDLOG(3, "SetVertexShader %p, name: %s\n", pvShader, rsMan->getShaderManager().getName(pvShader));
+	SDLOG(3, "SetVertexShader {}, name: {}\n", pvShader, rsMan->getShaderManager().getName(pvShader));
 	return rsMan->redirectSetVertexShader(pvShader);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetViewport(CONST D3DVIEWPORT9 *pViewport) {
 	RSManager::setLatest(rsMan);
-	SDLOG(6, "SetViewport X / Y - W x H : %4lu / %4lu  -  %4lu x %4lu ; Z: %f - %f\n", pViewport->X, pViewport->Y, pViewport->Width, pViewport->Height, pViewport->MinZ, pViewport->MaxZ);
+	SDLOG(6, "SetViewport X / Y - W x H : {:4} / {:4}  -  {:4} x {:4} ; Z: {:f} - {:f}\n", pViewport->X, pViewport->Y, pViewport->Width, pViewport->Height, pViewport->MinZ, pViewport->MaxZ);
 	return rsMan->redirectSetViewport(pViewport); 
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount) {
 	RSManager::setLatest(rsMan);
-	SDLOG(9, "DrawIndexedPrimitive(%s, %d, %u, %u, %u, %u)\n", D3DPrimitiveTypeToString(Type), BaseVertexIndex, MinVertexIndex, NumVertices, startIndex, primCount);
+	SDLOG(9, "DrawIndexedPrimitive({}, {}, {}, {}, {}, {})\n", D3DPrimitiveTypeToString(Type), BaseVertexIndex, MinVertexIndex, NumVertices, startIndex, primCount);
 	return rsMan->redirectDrawIndexedPrimitive(Type, BaseVertexIndex, MinVertexIndex, NumVertices, startIndex, primCount);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT MinIndex, UINT NumVertices, UINT PrimitiveCount, CONST void *pIndexData, D3DFORMAT IndexDataFormat, CONST void *pVertexStreamZeroData, UINT VertexStreamZeroStride) {
 	RSManager::setLatest(rsMan);
-	SDLOG(9, "DrawIndexedPrimitiveUP(%d, %u, %u, %u, %p, %d, %p, %u)\n", PrimitiveType, MinIndex, NumVertices, PrimitiveCount, pIndexData, IndexDataFormat, pVertexStreamZeroData, VertexStreamZeroStride);
+	SDLOG(9, "DrawIndexedPrimitiveUP({}, {}, {}, {}, {}, {}, {}, {})\n", PrimitiveType, MinIndex, NumVertices, PrimitiveCount, pIndexData, IndexDataFormat, pVertexStreamZeroData, VertexStreamZeroStride);
 	return rsMan->redirectDrawIndexedPrimitiveUP(PrimitiveType, MinIndex, NumVertices, PrimitiveCount, pIndexData, IndexDataFormat, pVertexStreamZeroData, VertexStreamZeroStride);
 }
 
@@ -72,7 +72,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveTyp
 
 HRESULT APIENTRY hkIDirect3DDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void *pVertexStreamZeroData, UINT VertexStreamZeroStride) {
 	RSManager::setLatest(rsMan);
-	SDLOG(9, "DrawPrimitiveUP(%d, %u, %p, %u)\n", PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
+	SDLOG(9, "DrawPrimitiveUP({}, {}, {}, {})\n", PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
 	return rsMan->redirectDrawPrimitiveUP(PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
 }
 
@@ -91,7 +91,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::DrawTriPatch(UINT Handle, CONST float *pNum
 HRESULT APIENTRY hkIDirect3DDevice9::GetBackBuffer(UINT iSwapChain, UINT iBackBuffer, D3DBACKBUFFER_TYPE Type, IDirect3DSurface9** ppBackBuffer) {
 	RSManager::setLatest(rsMan);
 	if(Type != D3DBACKBUFFER_TYPE_MONO) SDLOG(0, "Backbuffer type not mono!!");
-	SDLOG(4, "GetBackBuffer (swap %u) %u\n", iSwapChain, iBackBuffer);
+	SDLOG(4, "GetBackBuffer (swap {}) {}\n", iSwapChain, iBackBuffer);
 	return rsMan->redirectGetBackBuffer(iSwapChain, iBackBuffer, Type, ppBackBuffer);
 }
 
@@ -108,9 +108,9 @@ HRESULT APIENTRY hkIDirect3DDevice9::QueryInterface(REFIID riid, LPVOID *ppvObj)
 
 ULONG APIENTRY hkIDirect3DDevice9::AddRef() {
 	RSManager::setLatest(rsMan);	
-	SDLOG(0, "Device %p add ref on thread %u\n", m_pD3Ddev, GetCurrentThreadId());
+	SDLOG(0, "Device {} add ref on thread {}\n", m_pD3Ddev, GetCurrentThreadId());
 	ULONG ret = m_pD3Ddev->AddRef();
-	SDLOG(0, " -> %u\n", ret);
+	SDLOG(0, " -> {}\n", ret);
 	return ret;
 }
 
@@ -127,7 +127,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::BeginStateBlock() {
 
 HRESULT APIENTRY hkIDirect3DDevice9::Clear(DWORD Count, CONST D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil) {
 	RSManager::setLatest(rsMan);
-	SDLOG(4, "Clear - Flags: %d\n", Flags);
+	SDLOG(4, "Clear - Flags: {}\n", Flags);
 	return rsMan->redirectClear(Count, pRects, Flags, Color, Z, Stencil);
 }
 
@@ -151,7 +151,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::CreateCubeTexture(UINT EdgeLength,UINT Leve
 
 HRESULT APIENTRY hkIDirect3DDevice9::CreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle) {
 	RSManager::setLatest(rsMan);
-	SDLOG(4, "CreateDepthStencilSurface w/h: %4u/%4u  format: %s\n", Width, Height, D3DFormatToString(Format));
+	SDLOG(4, "CreateDepthStencilSurface w/h: {:4}/{:4}  format: {}\n", Width, Height, D3DFormatToString(Format));
 	return rsMan->redirectCreateDepthStencilSurface(Width, Height, Format, MultiSample, MultisampleQuality, Discard, ppSurface, pSharedHandle);
 }
 
@@ -162,7 +162,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::CreateIndexBuffer(UINT Length,DWORD Usage,D
 
 HRESULT APIENTRY hkIDirect3DDevice9::CreateOffscreenPlainSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DPOOL Pool, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle) {
 	RSManager::setLatest(rsMan);
-	SDLOG(4, "CreateOffscreenPlainSurface w/h: %4u/%4u  format: %s\n", Width, Height, D3DFormatToString(Format));
+	SDLOG(4, "CreateOffscreenPlainSurface w/h: {:4}/{:4}  format: {}\n", Width, Height, D3DFormatToString(Format));
 	return m_pD3Ddev->CreateOffscreenPlainSurface(Width,Height,Format,Pool,ppSurface,pSharedHandle);
 }
 
@@ -183,7 +183,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::CreateQuery(D3DQUERYTYPE Type, IDirect3DQue
 HRESULT APIENTRY hkIDirect3DDevice9::CreateRenderTarget(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle) {
 	RSManager::setLatest(rsMan);
 	HRESULT ret = rsMan->redirectCreateRenderTarget(Width, Height, Format, MultiSample, MultisampleQuality, Lockable, ppSurface, pSharedHandle);
-	SDLOG(1, "CreateRenderTarget w/h: %4u/%4u  format: %s\n  pointer: %p  multisample: %s  multisamplequality: %d\n", Width, Height, D3DFormatToString(Format), *ppSurface, D3DMultisampleTypeToString(MultiSample), MultisampleQuality);
+	SDLOG(1, "CreateRenderTarget w/h: {:4}/{:4}  format: {}\n  pointer: {}  multisample: {}  multisamplequality: {}\n", Width, Height, D3DFormatToString(Format), *ppSurface, D3DMultisampleTypeToString(MultiSample), MultisampleQuality);
 	return ret;
 }
 
@@ -194,15 +194,15 @@ HRESULT APIENTRY hkIDirect3DDevice9::CreateStateBlock(D3DSTATEBLOCKTYPE Type, ID
 
 HRESULT APIENTRY hkIDirect3DDevice9::CreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle) {
 	RSManager::setLatest(rsMan);
-	SDLOG(1, "CreateTexture w/h: %4u/%4u    format: %s    RENDERTARGET=%d\n", Width, Height, D3DFormatToString(Format), Usage & D3DUSAGE_RENDERTARGET);
+	SDLOG(1, "CreateTexture w/h: {:4}/{:4}    format: {}    RENDERTARGET={}\n", Width, Height, D3DFormatToString(Format), Usage & D3DUSAGE_RENDERTARGET);
 	return rsMan->redirectCreateTexture(Width, Height, Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, D3DPOOL Pool, IDirect3DVertexBuffer9** VERTexBuffer, HANDLE* pSharedHandle) {
 	RSManager::setLatest(rsMan);
-	SDLOG(4, "CreateVertexBuffer: length %d, usage: %p, fvf: %p, pool: %d\n", Length, Usage, FVF, Pool);
+	SDLOG(4, "CreateVertexBuffer: length {}, usage: {}, fvf: {}, pool: {}\n", Length, Usage, FVF, Pool);
 	HRESULT retval = m_pD3Ddev->CreateVertexBuffer(Length, Usage, FVF, Pool, VERTexBuffer, pSharedHandle);
-	SDLOG(4, " --> %p\n", *VERTexBuffer);
+	SDLOG(4, " --> {}\n", *VERTexBuffer);
 	return retval;
 }
 
@@ -286,13 +286,13 @@ HRESULT APIENTRY hkIDirect3DDevice9::GetDirect3D(IDirect3D9 **ppD3D9) {
 
 HRESULT APIENTRY hkIDirect3DDevice9::GetDisplayMode(UINT iSwapChain, D3DDISPLAYMODE* pMode) {
 	RSManager::setLatest(rsMan);
-	SDLOG(4, "GetDisplayMode %u\n", iSwapChain);
+	SDLOG(4, "GetDisplayMode {}\n", iSwapChain);
 	return rsMan->redirectGetDisplayMode(iSwapChain, pMode);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::GetFrontBufferData(UINT iSwapChain, IDirect3DSurface9* pDestSurface) {
 	RSManager::setLatest(rsMan);
-	SDLOG(4, "GetFrontBufferData %u\n", iSwapChain);
+	SDLOG(4, "GetFrontBufferData {}\n", iSwapChain);
 	return m_pD3Ddev->GetFrontBufferData(iSwapChain, pDestSurface);
 }
 
@@ -373,7 +373,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::GetRenderState(D3DRENDERSTATETYPE State, DW
 
 HRESULT APIENTRY hkIDirect3DDevice9::GetRenderTarget(DWORD renderTargetIndex, IDirect3DSurface9** ppRenderTarget) {
 	RSManager::setLatest(rsMan);
-	SDLOG(4, "GetRenderTarget %u\n", renderTargetIndex);
+	SDLOG(4, "GetRenderTarget {}\n", renderTargetIndex);
 	return rsMan->redirectGetRenderTarget(renderTargetIndex, ppRenderTarget);
 }
 
@@ -464,7 +464,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::LightEnable(DWORD LightIndex, BOOL bEnable)
 
 HRESULT APIENTRY hkIDirect3DDevice9::MultiplyTransform(D3DTRANSFORMSTATETYPE State, CONST D3DMATRIX *pMatrix) {
 	RSManager::setLatest(rsMan);
-	SDLOG(5, "MultiplyTransform state: %u matrix: \n%s\n", State, D3DMatrixToString(pMatrix).c_str());
+	SDLOG(5, "MultiplyTransform state: {} matrix: \n{}\n", State, D3DMatrixToString(pMatrix).c_str());
 	return m_pD3Ddev->MultiplyTransform(State, pMatrix);
 }
 
@@ -474,9 +474,9 @@ HRESULT APIENTRY hkIDirect3DDevice9::ProcessVertices(UINT SrcStartIndex, UINT De
 }
 
 ULONG APIENTRY hkIDirect3DDevice9::Release() {
-	SDLOG(0, "Device %p release on thread %u\n", m_pD3Ddev, GetCurrentThreadId());
+	SDLOG(0, "Device {} release on thread {}\n", m_pD3Ddev, GetCurrentThreadId());
 	ULONG ret = m_pD3Ddev->Release();
-	SDLOG(0, " -> %u\n", ret);
+	SDLOG(0, " -> {}\n", ret);
 	if(ret == 0) {
 		rsMan->releaseResources();
 		delete rsMan;
@@ -493,7 +493,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::Reset(D3DPRESENT_PARAMETERS *pPresentationP
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetClipPlane(DWORD Index, CONST float *pPlane) {
 	RSManager::setLatest(rsMan);
-	SDLOG(7, "SetClipPlane %d: %f / %f / %f / %f\n", 0, pPlane[0], pPlane[1], pPlane[2], pPlane[3]);
+	SDLOG(7, "SetClipPlane {}: {:f} / {:f} / {:f} / {:f}\n", 0, pPlane[0], pPlane[1], pPlane[2], pPlane[3]);
 	return m_pD3Ddev->SetClipPlane(Index, pPlane);
 }
 
@@ -521,7 +521,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetCursorProperties(UINT XHotSpot, UINT YHo
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetDepthStencilSurface(IDirect3DSurface9* pNewZStencil) {
 	RSManager::setLatest(rsMan);
-	SDLOG(5, "SetDepthStencilSurface %p\n", pNewZStencil);
+	SDLOG(5, "SetDepthStencilSurface {}\n", pNewZStencil);
 	return rsMan->redirectSetDepthStencilSurface(pNewZStencil);
 }
 
@@ -568,16 +568,16 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetPaletteEntries(UINT PaletteNumber, CONST
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetPixelShader(IDirect3DPixelShader9* pShader) {
 	RSManager::setLatest(rsMan);
-	SDLOG(3, "SetPixelShader %p, name: %s\n", pShader, rsMan->getShaderManager().getName(pShader));
+	SDLOG(3, "SetPixelShader {}, name: {}\n", pShader, rsMan->getShaderManager().getName(pShader));
 	return rsMan->redirectSetPixelShader(pShader);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetPixelShaderConstantB(UINT StartRegister,CONST BOOL* pConstantData,UINT  BoolCount) {
 	RSManager::setLatest(rsMan);
-	SDLOG(6, "SetPixelShaderConstantB: start: %u, count: %u\n", StartRegister, BoolCount);
+	SDLOG(6, "SetPixelShaderConstantB: start: {}, count: {}\n", StartRegister, BoolCount);
 	if(Settings::get().getLogLevel() > 13) {
 		for(size_t i=0; i<BoolCount; ++i) {
-			SDLOG(0, " - % 5s\n", pConstantData[i] ? "true" : "false");
+			SDLOG(0, " - {:>5}\n", pConstantData[i] ? "true" : "false");
 		}
 	}
 	return m_pD3Ddev->SetPixelShaderConstantB(StartRegister,pConstantData,BoolCount);
@@ -585,10 +585,10 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetPixelShaderConstantB(UINT StartRegister,
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetPixelShaderConstantF(UINT StartRegister,CONST float* pConstantData,UINT Vector4fCount) {
 	RSManager::setLatest(rsMan);
-	SDLOG(6, "SetPixelShaderConstantF: start: %u, count: %u\n", StartRegister, Vector4fCount);
+	SDLOG(6, "SetPixelShaderConstantF: start: {}, count: {}\n", StartRegister, Vector4fCount);
 	if(Settings::get().getLogLevel() > 13) {
 		for(size_t i=0; i<Vector4fCount; ++i) {
-			SDLOG(0, " - %16.10f %16.10f %16.10f %16.10f\n", pConstantData[i*4+0], pConstantData[i*4+1], pConstantData[i*4+2], pConstantData[i*4+3]);
+			SDLOG(0, " - {:16.10f} {:16.10f} {:16.10f} {:16.10f}\n", pConstantData[i*4+0], pConstantData[i*4+1], pConstantData[i*4+2], pConstantData[i*4+3]);
 		}
 	}
 	return rsMan->redirectSetPixelShaderConstantF(StartRegister,pConstantData,Vector4fCount);
@@ -596,10 +596,10 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetPixelShaderConstantF(UINT StartRegister,
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetPixelShaderConstantI(UINT StartRegister,CONST int* pConstantData,UINT Vector4iCount) {
 	RSManager::setLatest(rsMan);
-	SDLOG(6, "SetPixelShaderConstantI: start: %u, count: %u\n", StartRegister, Vector4iCount);
+	SDLOG(6, "SetPixelShaderConstantI: start: {}, count: {}\n", StartRegister, Vector4iCount);
 	if(Settings::get().getLogLevel() > 13) {
 		for(size_t i=0; i<Vector4iCount; ++i) {
-			SDLOG(0, " - % 16d % 16d % 16d % 16d\n", pConstantData[i*4+0], pConstantData[i*4+1], pConstantData[i*4+2], pConstantData[i*4+3]);
+			SDLOG(0, " - {: 16} {: 16} {: 16} {: 16}\n", pConstantData[i*4+0], pConstantData[i*4+1], pConstantData[i*4+2], pConstantData[i*4+3]);
 		}
 	}
 	return m_pD3Ddev->SetPixelShaderConstantI(StartRegister,pConstantData,Vector4iCount);
@@ -607,13 +607,13 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetPixelShaderConstantI(UINT StartRegister,
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetRenderState(D3DRENDERSTATETYPE State, DWORD Value) {
 	RSManager::setLatest(rsMan);
-	SDLOG(6, "SetRenderState: state: %s, value: %u\n", D3DRenderStateTypeToString(State), Value);
+	SDLOG(6, "SetRenderState: state: {}, value: {}\n", D3DRenderStateTypeToString(State), Value);
 	return rsMan->redirectSetRenderState(State, Value);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD Value) {
 	RSManager::setLatest(rsMan);
-	SDLOG(14, "SetSamplerState sampler %lu:   state type: %s   value: %lu\n", Sampler, D3DSamplerStateTypeToString(Type), Value);
+	SDLOG(14, "SetSamplerState sampler {}:   state type: {}   value: {}\n", Sampler, D3DSamplerStateTypeToString(Type), Value);
 	if(Settings::get().getForceAnisoLevel() > 0) {
 		if(Type == D3DSAMP_MAGFILTER || Type == D3DSAMP_MINFILTER) Value = D3DTEXF_ANISOTROPIC;
 		if(Type == D3DSAMP_MAXANISOTROPY) Value = Settings::get().getForceAnisoLevel();
@@ -623,7 +623,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetSamplerState(DWORD Sampler, D3DSAMPLERST
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetScissorRect(CONST RECT* pRect) {
 	RSManager::setLatest(rsMan);
-	SDLOG(5, "SetScissorRect %s\n", RectToString(pRect).c_str());
+	SDLOG(5, "SetScissorRect {}\n", RectToString(pRect).c_str());
 	return rsMan->redirectScissorRect(pRect);
 }
 
@@ -634,14 +634,14 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetSoftwareVertexProcessing(BOOL bSoftware)
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer9* pStreamData, UINT OffsetInBytes, UINT Stride) {
 	RSManager::setLatest(rsMan);
-	SDLOG(8, "SetStreamSource %d: %p (%u, %u)\n", StreamNumber, pStreamData, OffsetInBytes, Stride);
+	SDLOG(8, "SetStreamSource {}: {} ({}, {})\n", StreamNumber, pStreamData, OffsetInBytes, Stride);
 	LOG_CHECK(18, if(pStreamData) {
 		float *buffer;
 		pStreamData->Lock(0, 0, (void**)&buffer, D3DLOCK_READONLY);
 		D3DVERTEXBUFFER_DESC desc;
 		pStreamData->GetDesc(&desc);
 		for(unsigned i = 0; i < min(32, desc.Size / 4); ++i) {
-			SDLOG(0, "%8.2f ", buffer[i]);
+			SDLOG(0, "{:8.2f} ", buffer[i]);
 			if(i%8==7) SDLOG(0, "\n");
 		}
 		pStreamData->Unlock();
@@ -651,7 +651,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetStreamSource(UINT StreamNumber, IDirect3
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetStreamSourceFreq(UINT StreamNumber,UINT Divider) {
 	RSManager::setLatest(rsMan);
-	SDLOG(8, "SetStreamSourceFreq %d: %u\n", StreamNumber, Divider);
+	SDLOG(8, "SetStreamSourceFreq {}: {}\n", StreamNumber, Divider);
 	return m_pD3Ddev->SetStreamSourceFreq(StreamNumber, Divider);
 }
 
@@ -659,7 +659,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetStreamSourceFreq(UINT StreamNumber,UINT 
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetTexture(DWORD Stage, IDirect3DBaseTexture9 *pTexture) {
 	RSManager::setLatest(rsMan);
-	SDLOG(6, "setTexture %d, %p\n", Stage, pTexture);
+	SDLOG(6, "setTexture {}, {}\n", Stage, pTexture);
 	return rsMan->redirectSetTexture(Stage, pTexture);
 }
 
@@ -670,7 +670,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetTextureStageState(DWORD Stage, D3DTEXTUR
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetTransform(D3DTRANSFORMSTATETYPE State, CONST D3DMATRIX *pMatrix) {
 	RSManager::setLatest(rsMan);
-	SDLOG(0, "SetTransform state: %u matrix: \n%s\n", State, D3DMatrixToString(pMatrix).c_str());
+	SDLOG(0, "SetTransform state: {} matrix: \n{}\n", State, D3DMatrixToString(pMatrix).c_str());
 	return m_pD3Ddev->SetTransform(State, pMatrix);	
 }
 
@@ -681,10 +681,10 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetVertexDeclaration(IDirect3DVertexDeclara
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetVertexShaderConstantB(UINT StartRegister,CONST BOOL* pConstantData,UINT  BoolCount) {
 	RSManager::setLatest(rsMan);
-	SDLOG(4, "SetVertexShaderConstantB: start: %u, count: %u\n", StartRegister, BoolCount);
+	SDLOG(4, "SetVertexShaderConstantB: start: {}, count: {}\n", StartRegister, BoolCount);
 	if(Settings::get().getLogLevel() > 13) {
 		for(size_t i=0; i<BoolCount; ++i) {
-			SDLOG(0, " - %s\n", pConstantData[i] ? "true" : "false");
+			SDLOG(0, " - {}\n", pConstantData[i] ? "true" : "false");
 		}
 	}
 	return m_pD3Ddev->SetVertexShaderConstantB(StartRegister,pConstantData,BoolCount);
@@ -692,10 +692,10 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetVertexShaderConstantB(UINT StartRegister
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetVertexShaderConstantI(UINT StartRegister,CONST int* pConstantData,UINT Vector4iCount) {
 	RSManager::setLatest(rsMan);
-	SDLOG(4, "SetVertexShaderConstantI: start: %u, count: %u\n", StartRegister, Vector4iCount);
+	SDLOG(4, "SetVertexShaderConstantI: start: {}, count: {}\n", StartRegister, Vector4iCount);
 	if(Settings::get().getLogLevel() > 13) {
 		for(size_t i=0; i<Vector4iCount; ++i) {
-			SDLOG(0, " - % 16d % 16d % 16d % 16d\n", pConstantData[i*4+0], pConstantData[i*4+1], pConstantData[i*4+2], pConstantData[i*4+3]);
+			SDLOG(0, " - {: 16} {: 16} {: 16} {: 16}\n", pConstantData[i*4+0], pConstantData[i*4+1], pConstantData[i*4+2], pConstantData[i*4+3]);
 		}
 	}
 	return m_pD3Ddev->SetVertexShaderConstantI(StartRegister,pConstantData,Vector4iCount);
@@ -703,14 +703,14 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetVertexShaderConstantI(UINT StartRegister
 
 BOOL APIENTRY hkIDirect3DDevice9::ShowCursor(BOOL bShow) {
 	RSManager::setLatest(rsMan);
-	SDLOG(0, "ShowCursor %d\n", bShow);
+	SDLOG(0, "ShowCursor {}\n", bShow);
 	if(Settings::get().getHideMouseCursor()) return m_pD3Ddev->ShowCursor(false);
 	return m_pD3Ddev->ShowCursor(bShow);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::StretchRect(IDirect3DSurface9* pSourceSurface, CONST RECT* pSourceRect, IDirect3DSurface9* pDestSurface, CONST RECT* pDestRect,D3DTEXTUREFILTERTYPE Filter) {
 	RSManager::setLatest(rsMan);
-	SDLOG(5, "StretchRect src -> dest, sR -> dR : %p -> %p,  %s -> %s\n", pSourceSurface, pDestSurface, RectToString(pSourceRect).c_str(), RectToString(pDestRect).c_str());
+	SDLOG(5, "StretchRect src -> dest, sR -> dR : {} -> {},  {} -> {}\n", pSourceSurface, pDestSurface, RectToString(pSourceRect).c_str(), RectToString(pDestRect).c_str());
 	return rsMan->redirectStretchRect(pSourceSurface, pSourceRect, pDestSurface, pDestRect, Filter);
 }
 
@@ -718,31 +718,31 @@ HRESULT APIENTRY hkIDirect3DDevice9::TestCooperativeLevel() {
 	RSManager::setLatest(rsMan);
 	SDLOG(8, "TestCooperativeLevel");
 	HRESULT hr = m_pD3Ddev->TestCooperativeLevel();
-	SDLOG(8, " - returned %s\n", (hr ==  D3D_OK ? "OK" : (D3DERR_DEVICELOST ? "DEVICELOST" : (hr == D3DERR_DEVICENOTRESET ? "DEVICENOTRESET" : "DRIVERINTERNALERROR"))));
+	SDLOG(8, " - returned {}\n", (hr ==  D3D_OK ? "OK" : (D3DERR_DEVICELOST ? "DEVICELOST" : (hr == D3DERR_DEVICENOTRESET ? "DEVICENOTRESET" : "DRIVERINTERNALERROR"))));
 	return hr;
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::UpdateSurface(IDirect3DSurface9* pSourceSurface,CONST RECT* pSourceRect,IDirect3DSurface9* pDestinationSurface,CONST POINT* pDestPoint) {
 	RSManager::setLatest(rsMan);
-	SDLOG(6, "UpdateSurface source: %p - %s   dest: %p - %d/%d\n", pSourceSurface, RectToString(pSourceRect).c_str(), pDestinationSurface, pDestPoint->x, pDestPoint->y);
+	SDLOG(6, "UpdateSurface source: {} - {}   dest: {} - {}/{}\n", pSourceSurface, RectToString(pSourceRect).c_str(), pDestinationSurface, pDestPoint->x, pDestPoint->y);
 	return m_pD3Ddev->UpdateSurface(pSourceSurface,pSourceRect,pDestinationSurface,pDestPoint);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::UpdateTexture(IDirect3DBaseTexture9 *pSourceTexture, IDirect3DBaseTexture9 *pDestinationTexture) {
 	RSManager::setLatest(rsMan);
-	SDLOG(6, "UpdateTexture source: %p    dest: %p\n", pSourceTexture, pDestinationTexture);
+	SDLOG(6, "UpdateTexture source: {}    dest: {}\n", pSourceTexture, pDestinationTexture);
 	if(Settings::get().getEnableAlternativeTextureDumping()) {
 		void *unused;
 		if(pSourceTexture != NULL) {
 			if(pSourceTexture->QueryInterface(IID_GedosatoTexture, &unused) == S_OK) {
 				pSourceTexture = reinterpret_cast<hkIDirect3DTexture9*>(pSourceTexture)->m_pWrapped;
-				SDLOG(6, " - source wrapper for %p\n", pSourceTexture);
+				SDLOG(6, " - source wrapper for {}\n", pSourceTexture);
 			}
 		}
 		if(pDestinationTexture != NULL) {
 			if(pDestinationTexture->QueryInterface(IID_GedosatoTexture, &unused) == S_OK) {
 				pDestinationTexture = reinterpret_cast<hkIDirect3DTexture9*>(pDestinationTexture)->m_pWrapped;
-				SDLOG(6, " - destination wrapper for %p\n", pDestinationTexture);
+				SDLOG(6, " - destination wrapper for {}\n", pDestinationTexture);
 			}
 		}
 	}

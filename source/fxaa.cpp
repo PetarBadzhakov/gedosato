@@ -41,7 +41,7 @@ FXAA::FXAA(IDirect3DDevice9 *device, int width, int height, Quality quality, boo
 	SDLOG(0, "FXAA load\n");	
 	ID3DXBuffer* errors;
 	HRESULT hr = D3DXCreateEffectFromFile(device, getAssetFileName("FXAA.fx").c_str(), &defines.front(), NULL, flags, NULL, &effect, &errors);
-	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
+	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n {}\n", errors->GetBufferPointer());
 	
 	// Create buffer
 	buffer = RSManager::getRTMan().createTexture(width, height);

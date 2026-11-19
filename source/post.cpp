@@ -5,7 +5,7 @@
 #include <vector>
 using namespace std;
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "settings.h"
 #include "renderstate_manager.h"
@@ -23,12 +23,12 @@ void PostprocessingPass::reloadShader() {
 	vector<D3DXMACRO> defines;
 
 	// Setup pixel size macro
-	string pixelSizeText = format("float2(1.0/%d, 1.0/%d)", width, height);
+	string pixelSizeText = strFormat("float2(1.0/{}, 1.0/{})", width, height);
 	D3DXMACRO pixelSizeMacro = { "PIXEL_SIZE", pixelSizeText.c_str() };
 	defines.push_back(pixelSizeMacro);
 
 	// Setup screen size macro
-	string screenSizeText = format("float2(%d,%d)", width, height);
+	string screenSizeText = strFormat("float2({},{})", width, height);
 	D3DXMACRO screenSizeMacro = { "SCREEN_SIZE", screenSizeText.c_str() };
 	defines.push_back(screenSizeMacro);
 
@@ -42,14 +42,14 @@ void PostprocessingPass::reloadShader() {
 
 	// Load effect from file
 	string customfn = getConfigFileName(getExeFileName() + "\\" + shaderFn);
-	if(!boost::filesystem::exists(customfn)) customfn = getAssetFileName(shaderFn);
-	SDLOG(0, "%s load\n", customfn.c_str());
+	if(!std::filesystem::exists(customfn)) customfn = getAssetFileName(shaderFn);
+	SDLOG(0, "{} load\n", customfn.c_str());
 	ID3DXBuffer* errors;
 	ID3DXEffect* newEffect = NULL;
 	HRESULT hr = D3DXCreateEffectFromFile(device, customfn.c_str(), &defines.front(), NULL, flags, NULL, &newEffect, &errors);
 	if(hr != D3D_OK) {
-		SDLOG(-1, "ERRORS:\n %s\n", (char*)errors->GetBufferPointer());
-		Console::get().add(format("Error compiling %s:", customfn.c_str()));
+		SDLOG(-1, "ERRORS:\n {}\n", (char*)errors->GetBufferPointer());
+		Console::get().add(strFormat("Error compiling {}:", customfn.c_str()));
 		Console::get().add(static_cast<const char*>(errors->GetBufferPointer()));
 	}
 	else {
@@ -140,9 +140,9 @@ void Post::go(IDirect3DTexture9 *frame, IDirect3DSurface9 *dst) {
 	passes[0]->go(frame, dst, timer.elapsed());
 	// remaining passes from tmp with back copy
 	for(size_t curPass = 1; curPass < passes.size(); ++curPass) {
-		SDLOG(8, "Post processing: prepare pass %u\n", curPass);
+		SDLOG(8, "Post processing: prepare pass {}\n", curPass);
 		device->StretchRect(dst, NULL, tmp->getSurf(), NULL, D3DTEXF_NONE);
-		SDLOG(8, "Post processing: pass %u (%s)\n", curPass, passes[curPass]->getFn());
+		SDLOG(8, "Post processing: pass {} ({})\n", curPass, passes[curPass]->getFn());
 		passes[curPass]->go(tmp->getTex(), dst, timer.elapsed());
 	}
 }

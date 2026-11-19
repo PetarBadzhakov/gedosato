@@ -148,7 +148,7 @@ namespace {
 		//	}
 		//}
 		else {
-			SDLOG(-1, "ERROR: texture scaling conversion - unsupported format: %s", D3DFormatToString(fmt));
+			SDLOG(-1, "ERROR: texture scaling conversion - unsupported format: {}", D3DFormatToString(fmt));
 		}
 	}
 	void convertFromARGB8(const void* in, void* out, int width, int height, int outPitch, D3DFORMAT fmt) {
@@ -170,7 +170,7 @@ namespace {
 		//	}
 		//}
 		else {
-			SDLOG(-1, "ERROR: texture scaling inverse conversion - unsupported format: %s", D3DFormatToString(fmt));
+			SDLOG(-1, "ERROR: texture scaling inverse conversion - unsupported format: {}", D3DFormatToString(fmt));
 		}
 	}
 }
@@ -198,7 +198,7 @@ HRESULT APIENTRY hkIDirect3DTexture9::LockRect(UINT Level, D3DLOCKED_RECT* pLock
 	if(SUCCEEDED(ret)) {
 		dirty = true;
 		lockedRect = pLockedRect;
-		SDLOG(-1, " -> locked rect %s on texture size %4dx%4d\n", RectToString(&rect), desc.Width, desc.Height);
+		SDLOG(-1, " -> locked rect {} on texture size {:4}x{:4}\n", RectToString(&rect), desc.Width, desc.Height);
 	}
 	return ret;
 }
@@ -209,11 +209,11 @@ HRESULT APIENTRY hkIDirect3DTexture9::UnlockRect(UINT Level) {
 		SDLOG(-1, " -> unlocking, scaling\n");
 		D3DSURFACE_DESC desc;
 		GetLevelDesc(Level, &desc);
-		SDLOG(-1, " (tex format: %s)\n", D3DSurfaceDescToString(desc));
+		SDLOG(-1, " (tex format: {})\n", D3DSurfaceDescToString(desc));
 		int width = rect.right - rect.left;
 		int height = rect.bottom - rect.top;
 		size_t bytesize = width*height*4;
-		SDLOG(-1, " -> allocating %d\n", bytesize);
+		SDLOG(-1, " -> allocating {}\n", bytesize);
 		BYTE* data = new BYTE[bytesize];
 		uint32_t* uintData = (uint32_t*)data;
 		SDLOG(-1, " -> allocated\n");
@@ -227,7 +227,7 @@ HRESULT APIENTRY hkIDirect3DTexture9::UnlockRect(UINT Level) {
 		rect.right = rect.left + width;
 		rect.bottom = rect.top + height;
 		if(SUCCEEDED(m_pWrapped->LockRect(Level, &relocked, &rect, 0))) {
-			SDLOG(-1, " -> relocked rect %s pitch %d\n", RectToString(&rect), relocked.Pitch);
+			SDLOG(-1, " -> relocked rect {} pitch {}\n", RectToString(&rect), relocked.Pitch);
 			convertFromARGB8(uintData, relocked.pBits, width, height, relocked.Pitch, desc.Format);
 			SDLOG(-1, " -> copied back\n");
 			//stbi_write_png(format(R"(C:\tmp\dump\%p_scaled.png)", m_pWrapped).c_str(), width, height, 4, uintData, width * 4);

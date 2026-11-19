@@ -21,7 +21,7 @@ void DS2Plugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3DFORM
 	unsigned drw = rw, drh = rh;
 	if(rh > 1 && rw > 1 && rh * 16 > rw * 9) { // 16:10 or 4:3
 		drh = rw * 9 / 16;
-		SDLOG(2, "Resource init: adjusting for non-16:9 resolution, screen: %ux%u, render: %ux%u\n", rw, rh, drw, drh);
+		SDLOG(2, "Resource init: adjusting for non-16:9 resolution, screen: {}x{}, render: {}x{}\n", rw, rh, drw, drh);
 	}
 	RSManager::getRTMan().setOverrideFormat(RenderTarget::FMT_ARGB_FP16);
 	if(Settings::get().getEnableDoF()) dof = new DOF(d3ddev, drw, drh, (Settings::get().getDOFType() == "bokeh") ? DOF::BOKEH : DOF::BASIC, Settings::get().getDOFBaseRadius(), false);
@@ -44,15 +44,15 @@ void DS2Plugin::reloadShaders() {
 
 void DS2Plugin::reportStatus() {
 	if(doAA && (smaa || fxaa)) {
-		if(smaa) Console::get().add(format("SMAA enabled, quality level %d", Settings::get().getAAQuality()));
-		else Console::get().add(format("FXAA enabled, quality level %d", Settings::get().getAAQuality()));
+		if(smaa) Console::get().add(strFormat("SMAA enabled, quality level {}", Settings::get().getAAQuality()));
+		else Console::get().add(strFormat("FXAA enabled, quality level {}", Settings::get().getAAQuality()));
 	}
 	else Console::get().add("AA disabled");
-	if(post && doPost) Console::get().add(format("Postprocessing enabled, type %s", Settings::get().getPostProcessingType().c_str()));
+	if(post && doPost) Console::get().add(strFormat("Postprocessing enabled, type {}", Settings::get().getPostProcessingType().c_str()));
 	else Console::get().add("Postprocessing disabled");
-	if(dof && doDof) Console::get().add(format("DoF enabled, type %s, base blur size %f", Settings::get().getDOFType().c_str(), Settings::get().getDOFBaseRadius()));
+	if(dof && doDof) Console::get().add(strFormat("DoF enabled, type {}, base blur size {:f}", Settings::get().getDOFType().c_str(), Settings::get().getDOFBaseRadius()));
 	else Console::get().add("DoF disabled");
-	if(ssao && doAO) Console::get().add(format("SSAO enabled, strength %d, scale %d, blur %s", Settings::get().getSsaoStrength(), Settings::get().getSsaoScale(), Settings::get().getSsaoBlurType().c_str()));
+	if(ssao && doAO) Console::get().add(strFormat("SSAO enabled, strength {}, scale {}, blur {}", Settings::get().getSsaoStrength(), Settings::get().getSsaoScale(), Settings::get().getSsaoBlurType().c_str()));
 	else Console::get().add("SSAO disabled");
 	if(bloom && doBloom) Console::get().add("Bloom enabled");
 	else Console::get().add("Bloom disabled");

@@ -1,6 +1,6 @@
 #include "renderstate_manager_dx9.h"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "d3d9/d3d9dev_ex.h"
 #include "d3d9/d3d9swap.h"
@@ -34,10 +34,10 @@ hkIDirect3DDevice9* RSManagerDX9::getHkD3Ddev() {
 
 
 void RSManagerDX9::showStatus() {
-	console->add(format("%s %s", INTERCEPTOR_NAME, GeDoSaToVersion()));
+	console->add(strFormat("{} {}", INTERCEPTOR_NAME, GeDoSaToVersion()));
 	if(getScaler()) getScaler()->showStatus();
 	else console->add("Not downsampling");
-	console->add(format("Plugin loaded: %s", plugin->getName().c_str()));
+	console->add(strFormat("Plugin loaded: {}", plugin->getName().c_str()));
 	plugin->reportStatus();
 }
 
@@ -92,7 +92,7 @@ void RSManagerDX9::initResources(bool downsampling, unsigned rw, unsigned rh,
 		SDLOG(2, "Generating backbuffers:\n")
 		for(unsigned i = 0; i < numBackBuffers; ++i) {
 			backBuffers.push_back(rtMan->createTexture(rw, rh, backbufferFormat, multiSampleType, multiSampleQuality));
-			SDLOG(2, "Backbuffer %u: %p\n", i, backBuffers[i]);
+			SDLOG(2, "Backbuffer {}: {}\n", i, backBuffers[i]);
 		}
 
 		// set back buffer 0 as initial rendertarget
@@ -100,13 +100,13 @@ void RSManagerDX9::initResources(bool downsampling, unsigned rw, unsigned rh,
 		// generate additional buffer to emulate flip if required
 		if(swapEffect == SWAP_FLIP && Settings::get().getEmulateFlipBehaviour()) {
 			extraBuffer = rtMan->createSurface(rw, rh, backbufferFormat);
-			SDLOG(2, "Extra backbuffer: %p\n", extraBuffer);
+			SDLOG(2, "Extra backbuffer: {}\n", extraBuffer);
 		}
 
 		// if required, determine depth/stencil surf type and create
 		if(autoDepthStencil) {
 			d3ddev->CreateDepthStencilSurface(rw, rh, depthStencilFormat, multiSampleType, multiSampleQuality, FALSE, &depthStencilSurf, NULL);
-			SDLOG(2, "Generated depth stencil surface - format: %s\n", D3DFormatToString(depthStencilFormat));
+			SDLOG(2, "Generated depth stencil surface - format: {}\n", D3DFormatToString(depthStencilFormat));
 			// set our depth stencil surface
 			d3ddev->SetDepthStencilSurface(depthStencilSurf);
 		}
@@ -175,10 +175,10 @@ void RSManagerDX9::prePresent(bool doNotFlip) {
 		plugin->preDownsample(backBuffers[0]->getSurf());
 
 		// actual scaling
-		SDLOG(2, "Scaling fake backbuffer (%p)\n", backBuffers[0]);
+		SDLOG(2, "Scaling fake backbuffer ({})\n", backBuffers[0]);
 		IDirect3DSurface9* realBackBuffer;
 		d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &realBackBuffer);
-		SDLOG(2, "- to backbuffer %p\n", realBackBuffer);
+		SDLOG(2, "- to backbuffer {}\n", realBackBuffer);
 		scaler->go(backBuffers[0]->getTex(), realBackBuffer);
 		SDLOG(2, "- scaling complete!\n");
 		// apply plugin actions if specified
@@ -296,7 +296,7 @@ HRESULT RSManagerDX9::redirectPresent(CONST RECT *pSourceRect, CONST RECT *pDest
 }
 
 HRESULT RSManagerDX9::redirectPresentEx(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion, DWORD dwFlags) {
-	SDLOG(1, "- PresentEx flags: %s\n", D3DPresentExFlagsToString(dwFlags).c_str());
+	SDLOG(1, "- PresentEx flags: {}\n", D3DPresentExFlagsToString(dwFlags).c_str());
 	prePresent((dwFlags & D3DPRESENT_DONOTFLIP) != 0);
 
 	storeRenderState();
@@ -320,22 +320,22 @@ void RSManagerDX9::captureRTScreen(const string& stype, IDirect3DSurface9 *rtArg
 	sprintf(dirbuff, "%sscreens\\%s", getInstallDirectory().c_str(), getExeFileName().c_str());
 	CreateDirectory(dirbuff, NULL);
 	sprintf(buffer, "%s\\%s_%u.png", dirbuff, timebuf, index++);
-	SDLOG(0, " - to %s\n", buffer);
+	SDLOG(0, " - to {}\n", buffer);
 
 	IDirect3DSurface9 *render = rtArg;
 	if(rtArg == NULL) d3ddev->GetRenderTarget(0, &render);
 	if(render) {
 		imgWriter->writeSurface(buffer, render);
-		Console::get().add(format("Captured %s screenshot to %s", stype.c_str(), buffer));
+		Console::get().add(strFormat("Captured {} screenshot to {}", stype.c_str(), buffer));
 	}
 	if(rtArg == NULL) SAFERELEASE(render);
 }
 
 void RSManagerDX9::dumpSurface(const char* name, IDirect3DSurface9* surface) {
-	auto dirname = format("%s\\tmp\\%s", getInstallDirectory().c_str(), getExeFileName().c_str());
+	auto dirname = strFormat("{}\\tmp\\{}", getInstallDirectory().c_str(), getExeFileName().c_str());
 	CreateDirectory(dirname.c_str(), NULL);
-	auto fullname = format("%s\\dump%03d_%s_%p.tga", dirname.c_str(), dumpCaptureIndex++, name, surface);
-	SDLOG(1, "!! dumped RT %p to %s\n", surface, fullname.c_str());
+	auto fullname = strFormat("{}\\dump{:03}_{}_{}.tga", dirname.c_str(), dumpCaptureIndex++, name, surface);
+	SDLOG(1, "!! dumped RT {} to {}\n", surface, fullname.c_str());
 	D3DXSaveSurfaceToFile(fullname.c_str(), D3DXIFF_TGA, surface, NULL, NULL);
 }
 
@@ -351,7 +351,7 @@ HRESULT RSManagerDX9::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3D
 		IDirect3DSurface9* rt;
 		d3ddev->GetRenderTarget(RenderTargetIndex, &rt);
 		if(rt) {
-			dumpSurface(format("framedump_preswitch%03u_target%d_pointer%p", renderTargetSwitches, RenderTargetIndex, rt).c_str(), rt);
+			dumpSurface(strFormat("framedump_preswitch{:03}_target{}_pointer{}", renderTargetSwitches, RenderTargetIndex, rt).c_str(), rt);
 		}
 		SAFERELEASE(rt);
 	}
@@ -363,7 +363,7 @@ HRESULT RSManagerDX9::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3D
 		IDirect3DSurface9* rt;
 		d3ddev->GetRenderTarget(RenderTargetIndex, &rt);
 		if(rt) {
-			dumpSurface(format("framedump_postswitch%03u_target%d_pointer%p", renderTargetSwitches, RenderTargetIndex, rt).c_str(), rt);
+			dumpSurface(strFormat("framedump_postswitch{:03}_target{}_pointer{}", renderTargetSwitches, RenderTargetIndex, rt).c_str(), rt);
 		}
 		SAFERELEASE(rt);
 	}
@@ -372,20 +372,20 @@ HRESULT RSManagerDX9::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3D
 }
 
 void RSManagerDX9::registerD3DXCreateTextureFromFileInMemory(LPCVOID pSrcData, UINT SrcDataSize, LPDIRECT3DTEXTURE9 pTexture) {
-	SDLOG(1, "RenderstateManager: registerD3DXCreateTextureFromFileInMemory %p | %p (size %d)\n", pTexture, pSrcData, SrcDataSize);
+	SDLOG(1, "RenderstateManager: registerD3DXCreateTextureFromFileInMemory {} | {} (size {})\n", pTexture, pSrcData, SrcDataSize);
 	if(Settings::get().getEnableTextureDumping()) {
 		UINT32 hash = SuperFastHash((char*)const_cast<void*>(pSrcData), SrcDataSize);
-		SDLOG(1, " - size: %8u, hash: %8x\n", SrcDataSize, hash);
+		SDLOG(1, " - size: {:8}, hash: {:8x}\n", SrcDataSize, hash);
 
 		IDirect3DSurface9* surf = NULL;
 		((IDirect3DTexture9*)pTexture)->GetSurfaceLevel(0, &surf);
 		if(surf != NULL) {
-			string directory = getInstalledFileName(format("textures\\%s\\dump\\", getExeFileName().c_str()));
-			SDLOG(1, "%s\n", boost::filesystem::path(directory).string().c_str())
+			string directory = getInstalledFileName(strFormat("textures\\{}\\dump\\", getExeFileName().c_str()));
+			SDLOG(1, "{}\n", directory)
 				try {
-				boost::filesystem::create_directories(boost::filesystem::path(directory));
-				string fn = format("%s%08x.tga", directory.c_str(), hash);
-				SDLOG(1, " - dumping texture to %s\n", fn);
+				std::filesystem::create_directories(directory);
+				string fn = strFormat("{}{:08x}.tga", directory.c_str(), hash);
+				SDLOG(1, " - dumping texture to {}\n", fn);
 				if(SUCCEEDED(D3DXSaveSurfaceToFile(fn.c_str(), D3DXIFF_TGA, surf, NULL, NULL))) {
 					SDLOG(1, " - texture dumped\n");
 				}
@@ -393,13 +393,13 @@ void RSManagerDX9::registerD3DXCreateTextureFromFileInMemory(LPCVOID pSrcData, U
 					SDLOG(-1, "ERROR while texture dumping (D3DX)\n");
 				}
 			}
-			catch(boost::filesystem::filesystem_error e) {
-				SDLOG(-1, "ERROR - Filesystem error while trying to create directory:\n%s\n", e.what());
+			catch(const std::filesystem::filesystem_error& e) {
+				SDLOG(-1, "ERROR - Filesystem error while trying to create directory:\n{}\n", e.what());
 			}
 			surf->Release();
 		}
 		else {
-			SDLOG(-1, "ERROR - texture dumping failed, could not get level 0 surface from texture %p\n", pTexture);
+			SDLOG(-1, "ERROR - texture dumping failed, could not get level 0 surface from texture {}\n", pTexture);
 		}
 	}
 	registerKnowTexture(pSrcData, SrcDataSize, pTexture);
@@ -412,7 +412,7 @@ void RSManagerDX9::registerKnowTexture(LPCVOID pSrcData, UINT SrcDataSize, LPDIR
 		if(hash == _hash) {	\
 			texture##_name = pTexture; \
 			++foundKnownTextures; \
-			SDLOG(1, "RenderstateManager: recognized known texture %s at %u\n", #_name, pTexture); \
+			SDLOG(1, "RenderstateManager: recognized known texture {} at {}\n", #_name, pTexture); \
 		}
 		#include "Textures.def"
 		#undef TEXTURE
@@ -423,8 +423,8 @@ void RSManagerDX9::registerKnowTexture(LPCVOID pSrcData, UINT SrcDataSize, LPDIR
 }
 
 void RSManagerDX9::registerD3DXCompileShader(LPCSTR pSrcData, UINT srcDataLen, const D3DXMACRO* pDefines, LPD3DXINCLUDE pInclude, LPCSTR pFunctionName, LPCSTR pProfile, DWORD Flags, LPD3DXBUFFER * ppShader, LPD3DXBUFFER * ppErrorMsgs, LPD3DXCONSTANTTABLE * ppConstantTable) {
-	SDLOG(0, "RenderstateManager: registerD3DXCompileShader %p, fun: %s, profile: %s", *ppShader, pFunctionName, pProfile);
-	SDLOG(0, "============= source:\n%s\n====================", pSrcData);
+	SDLOG(0, "RenderstateManager: registerD3DXCompileShader {}, fun: {}, profile: {}", *ppShader, pFunctionName, pProfile);
+	SDLOG(0, "============= source:\n{}\n====================", pSrcData);
 }
 
 void RSManagerDX9::storeRenderState() {
@@ -474,15 +474,15 @@ HRESULT RSManagerDX9::redirectD3DXCreateTextureFromFileInMemoryEx(LPDIRECT3DDEVI
 	}
 	// try override
 	if(Settings::get().getEnableTextureOverride()) {
-		SDLOG(4, "Trying texture override size: %8u, hash: %8x\n", ssize, hash);
-		string fn = getInstalledFileName(format("textures\\%s\\override\\%08x.dds", getExeFileName().c_str(), hash));
+		SDLOG(4, "Trying texture override size: {:8}, hash: {:8x}\n", ssize, hash);
+		string fn = getInstalledFileName(strFormat("textures\\{}\\override\\{:08x}.dds", getExeFileName().c_str(), hash));
 		if(fileExists(fn.c_str())) {
-			SDLOG(3, "Texture override (dds)! hash: %8x\n", hash);
+			SDLOG(3, "Texture override (dds)! hash: {:8x}\n", hash);
 			hr = D3DXCreateTextureFromFileEx(pDevice, fn.c_str(), D3DX_DEFAULT, D3DX_DEFAULT, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
 		}
-		fn = getInstalledFileName(format("textures\\%s\\override\\%08x.png", getExeFileName().c_str(), hash));
+		fn = getInstalledFileName(strFormat("textures\\{}\\override\\{:08x}.png", getExeFileName().c_str(), hash));
 		if(fileExists(fn.c_str())) {
-			SDLOG(3, "Texture override (png)! hash: %8x\n", hash);
+			SDLOG(3, "Texture override (png)! hash: {:8x}\n", hash);
 			hr = D3DXCreateTextureFromFileEx(pDevice, fn.c_str(), D3DX_DEFAULT, D3DX_DEFAULT, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
 		}
 	}
@@ -496,8 +496,8 @@ HRESULT RSManagerDX9::redirectD3DXCreateTextureFromFileInMemoryEx(LPDIRECT3DDEVI
 			(*ppTexture)->Release();
 			string fn = getInstalledFileName("tmp\\temp.png");
 			string outfn = getInstalledFileName("tmp\\temp_out.png");
-			string command = format("\"\"%s\" \"%s\" %08p \"%s\"\"", getAssetFileName("GeDoSaToTexM.exe").c_str(), fn.c_str(), hash, outfn.c_str());
-			SDLOG(4, "Texture marking, executing command: \n : %s", command.c_str());
+			string command = strFormat("\"\"{}\" \"{}\" {:08} \"{}\"\"", getAssetFileName("GeDoSaToTexM.exe").c_str(), fn.c_str(), hash, outfn.c_str());
+			SDLOG(4, "Texture marking, executing command: \n : {}", command.c_str());
 			RunSilent(command.c_str());
 			D3DXCreateTextureFromFileExA(pDevice, outfn.c_str(), Width, Height, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
 		}
@@ -517,7 +517,7 @@ HRESULT RSManagerDX9::redirectGetBackBuffer(UINT iSwapChain, UINT iBackBuffer, D
 
 HRESULT RSManagerDX9::redirectGetRenderTarget(DWORD renderTargetIndex, IDirect3DSurface9** ppRenderTarget) {
 	HRESULT res = d3ddev->GetRenderTarget(renderTargetIndex, ppRenderTarget);
-	SDLOG(2, " -> %p\n", *ppRenderTarget);
+	SDLOG(2, " -> {}\n", *ppRenderTarget);
 	return res;
 }
 
@@ -531,7 +531,7 @@ HRESULT RSManagerDX9::redirectGetDisplayMode(UINT iSwapChain, D3DDISPLAYMODE* pM
 		pMode->RefreshRate = Settings::getResSettings().getActiveHz();
 	}
 	if(Settings::get().getForceBorderlessFullscreen()) WindowManager::get().interceptGetDisplayMode(pMode);
-	if(!SUCCEEDED(res)) SDLOG(0, " -> redirectGetDisplayMode NOT SUCCEEDED - %x", res);
+	if(!SUCCEEDED(res)) SDLOG(0, " -> redirectGetDisplayMode NOT SUCCEEDED - {}\n", hresultName(res));
 	return res;
 }
 HRESULT RSManagerDX9::redirectGetDisplayModeEx(UINT iSwapChain, D3DDISPLAYMODEEX* pMode, D3DDISPLAYROTATION* pRotation) {
@@ -545,7 +545,7 @@ HRESULT RSManagerDX9::redirectGetDisplayModeEx(UINT iSwapChain, D3DDISPLAYMODEEX
 		pMode->ScanLineOrdering = D3DSCANLINEORDERING_PROGRESSIVE;
 	}
 	if(Settings::get().getForceBorderlessFullscreen()) WindowManager::get().interceptGetDisplayMode((D3DDISPLAYMODE*)pMode);
-	if(!SUCCEEDED(res)) SDLOG(0, " -> redirectGetDisplayMode NOT SUCCEEDED - %x", res);
+	if(!SUCCEEDED(res)) SDLOG(0, " -> redirectGetDisplayModeEx NOT SUCCEEDED - {}\n", hresultName(res));
 	return res;
 }
 
@@ -562,16 +562,16 @@ HRESULT RSManagerDX9::redirectGetDepthStencilSurface(IDirect3DSurface9 **ppZSten
 ////////////////////////////////////////////////////////////////////////// CreateDevice/Reset helpers
 namespace {
 	void logMode(const char* operation, D3DPRESENT_PARAMETERS *pPresentationParameters, D3DDISPLAYMODEEX* pFullscreenDisplayMode = NULL) {
-		SDLOG(0, " - %s requested mode:\n", operation);
-		SDLOG(0, " - - Backbuffer(s): %4u x %4u %16s *%d \n", pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight, D3DFormatToString(pPresentationParameters->BackBufferFormat), pPresentationParameters->BackBufferCount);
-		SDLOG(0, " - - PresentationInterval: %2u   Windowed: %5s    Refresh: %3u Hz    SwapEffect: %s\n", pPresentationParameters->PresentationInterval,
+		SDLOG(0, " - {} requested mode:\n", operation);
+		SDLOG(0, " - - Backbuffer(s): {:4} x {:4} {:>16} *{} \n", pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight, D3DFormatToString(pPresentationParameters->BackBufferFormat), pPresentationParameters->BackBufferCount);
+		SDLOG(0, " - - PresentationInterval: {:2}   Windowed: {:>5}    Refresh: {:3} Hz    SwapEffect: {}\n", pPresentationParameters->PresentationInterval,
 			pPresentationParameters->Windowed ? "true" : "false", pPresentationParameters->FullScreen_RefreshRateInHz, D3DSwapEffectToString(pPresentationParameters->SwapEffect));
-		SDLOG(0, " - - Autodepthstencil: %8s  Format: %s  Discard: %s\n",
+		SDLOG(0, " - - Autodepthstencil: {:>8}  Format: {}  Discard: {}\n",
 			pPresentationParameters->EnableAutoDepthStencil ? "true" : "false", D3DFormatToString(pPresentationParameters->AutoDepthStencilFormat), pPresentationParameters->Flags&D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL ? "true" : "false");
-		SDLOG(0, " - - Multisampling Type: %s  Quality: %d\n", D3DMultisampleTypeToString(pPresentationParameters->MultiSampleType), pPresentationParameters->MultiSampleQuality)
+		SDLOG(0, " - - Multisampling Type: {}  Quality: {}\n", D3DMultisampleTypeToString(pPresentationParameters->MultiSampleType), pPresentationParameters->MultiSampleQuality)
 		if(pFullscreenDisplayMode != NULL) {
 			SDLOG(0, " - D3DDISPLAYMODEEX set\n")
-				SDLOG(0, " - - FS: %4u x %4u @ %3u Hz %16s\n", pFullscreenDisplayMode->Width, pFullscreenDisplayMode->Height, pFullscreenDisplayMode->RefreshRate, D3DFormatToString(pFullscreenDisplayMode->Format));
+				SDLOG(0, " - - FS: {:4} x {:4} @ {:3} Hz {:>16}\n", pFullscreenDisplayMode->Width, pFullscreenDisplayMode->Height, pFullscreenDisplayMode->RefreshRate, D3DFormatToString(pFullscreenDisplayMode->Format));
 		}
 	}
 	bool isDownsamplingRequest(D3DPRESENT_PARAMETERS *pPresentationParameters, D3DDISPLAYMODEEX* pFullscreenDisplayMode = NULL) {
@@ -687,7 +687,7 @@ HRESULT RSManagerDX9::redirectCreateDevice(IDirect3D9* d3d9, UINT Adapter, D3DDE
 			initResourcesWrapper(true, pPresentationParameters);
 			if(fs) WindowManager::get().setFakeFullscreen(Settings::get().getRenderWidth(), Settings::get().getRenderHeight());
 		}
-		else SDLOG(0, "FAILED creating downsampling device -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret));
+		else SDLOG(0, "FAILED creating downsampling device -- error: {}\n description: {}\n", hresultName(ret), hresultDescription(ret));
 		return ret;
 	}
 
@@ -699,7 +699,7 @@ HRESULT RSManagerDX9::redirectCreateDevice(IDirect3D9* d3d9, UINT Adapter, D3DDE
 		initResourcesWrapper(false, pPresentationParameters);
 		if(fs) WindowManager::get().setFakeFullscreen(pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight);
 	}
-	else SDLOG(0, "FAILED creating non-downsampling device -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret));
+	else SDLOG(0, "FAILED creating non-downsampling device -- error: {}\n description: {}\n", hresultName(ret), hresultDescription(ret));
 	return ret;
 }
 
@@ -726,7 +726,7 @@ HRESULT RSManagerDX9::redirectCreateDeviceEx(IDirect3D9Ex* d3d9ex, UINT Adapter,
 			initResourcesWrapper(true, pPresentationParameters);
 			if(fs) WindowManager::get().setFakeFullscreen(Settings::get().getRenderWidth(), Settings::get().getRenderHeight());
 		}
-		else SDLOG(0, "FAILED creating downsampling ex device -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret));
+		else SDLOG(0, "FAILED creating downsampling ex device -- error: {}\n description: {}\n", hresultName(ret), hresultDescription(ret));
 		return ret;
 	}
 
@@ -738,7 +738,7 @@ HRESULT RSManagerDX9::redirectCreateDeviceEx(IDirect3D9Ex* d3d9ex, UINT Adapter,
 		initResourcesWrapper(false, pPresentationParameters);
 		if(fs) WindowManager::get().setFakeFullscreen(pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight);
 	}
-	else SDLOG(0, "FAILED creating non-downsampling ex device -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret));
+	else SDLOG(0, "FAILED creating non-downsampling ex device -- error: {}\n description: {}\n", hresultName(ret), hresultDescription(ret));
 	return ret;
 }
 
@@ -765,7 +765,7 @@ HRESULT RSManagerDX9::redirectReset(D3DPRESENT_PARAMETERS * pPresentationParamet
 			if(fs) WindowManager::get().setFakeFullscreen(Settings::get().getRenderWidth(), Settings::get().getRenderHeight());
 		}
 		else {
-			SDLOG(0, "FAILED resetting to downsampling -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret));
+			SDLOG(0, "FAILED resetting to downsampling -- error: {}\n description: {}\n", hresultName(ret), hresultDescription(ret));
 		}
 		return ret;
 	}
@@ -777,7 +777,7 @@ HRESULT RSManagerDX9::redirectReset(D3DPRESENT_PARAMETERS * pPresentationParamet
 		initResourcesWrapper(false, pPresentationParameters);
 		if(fs) WindowManager::get().setFakeFullscreen(pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight);
 	}
-	else SDLOG(0, "FAILED resetting to non-downsampling -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret));
+	else SDLOG(0, "FAILED resetting to non-downsampling -- error: {}\n description: {}\n", hresultName(ret), hresultDescription(ret));
 	return ret;
 }
 
@@ -805,7 +805,7 @@ HRESULT RSManagerDX9::redirectResetEx(D3DPRESENT_PARAMETERS* pPresentationParame
 			initResourcesWrapper(true, pPresentationParameters);
 			if(fs) WindowManager::get().setFakeFullscreen(Settings::get().getRenderWidth(), Settings::get().getRenderHeight());
 		}
-		else SDLOG(0, "FAILED resetting to downsampling ex -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret));
+		else SDLOG(0, "FAILED resetting to downsampling ex -- error: {}\n description: {}\n", hresultName(ret), hresultDescription(ret));
 		return ret;
 	}
 
@@ -816,7 +816,7 @@ HRESULT RSManagerDX9::redirectResetEx(D3DPRESENT_PARAMETERS* pPresentationParame
 		initResourcesWrapper(false, pPresentationParameters);
 		if(fs) WindowManager::get().setFakeFullscreen(pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight);
 	}
-	else SDLOG(0, "FAILED resetting to non-downsampling ex -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret));
+	else SDLOG(0, "FAILED resetting to non-downsampling ex -- error: {}\n description: {}\n", hresultName(ret), hresultDescription(ret));
 	return ret;
 }
 
@@ -834,7 +834,7 @@ HRESULT RSManagerDX9::redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9 *pTe
 		void *unused;
 		if(pTexture->QueryInterface(IID_GedosatoTexture, &unused) == S_OK) {
 			pTexture = reinterpret_cast<hkIDirect3DTexture9*>(pTexture)->m_pWrapped;
-			SDLOG(6, " - wrapper for %p\n", pTexture);
+			SDLOG(6, " - wrapper for {}\n", pTexture);
 		}
 	}
 	if(Settings::get().getLogLevel() > 10 && pTexture) {
@@ -842,9 +842,9 @@ HRESULT RSManagerDX9::redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9 *pTe
 		if(pTexture->QueryInterface(IID_IDirect3DTexture9, (void**)&tex) == S_OK) {
 			D3DSURFACE_DESC desc;
 			tex->GetLevelDesc(0, &desc);
-			SDLOG(10, " -- size: %dx%d RT? %s\n", desc.Width, desc.Height, (desc.Usage & D3DUSAGE_RENDERTARGET) ? "true" : "false");
+			SDLOG(10, " -- size: {}x{} RT? {}\n", desc.Width, desc.Height, (desc.Usage & D3DUSAGE_RENDERTARGET) ? "true" : "false");
 			if(dumpingFrame) {
-				dumpTexture(format("framedump_settexture%03u_stage%d_texture_%p", renderTargetSwitches++, Stage, pTexture).c_str(), tex);
+				dumpTexture(strFormat("framedump_settexture{:03}_stage{}_texture_{}", renderTargetSwitches++, Stage, pTexture).c_str(), tex);
 			}
 			tex->Release();
 		}
@@ -857,7 +857,7 @@ HRESULT RSManagerDX9::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
 		IDirect3DSurface9* rt;
 		d3ddev->GetRenderTarget(0, &rt);
 		if(rt) {
-			dumpSurface(format("framedump_shaderchange%03u_target0_shader_%s", renderTargetSwitches++, getShaderManager().getName(pShader)).c_str(), rt);
+			dumpSurface(strFormat("framedump_shaderchange{:03}_target0_shader_{}", renderTargetSwitches++, getShaderManager().getName(pShader)).c_str(), rt);
 		}
 		SAFERELEASE(rt);
 	}
@@ -938,11 +938,11 @@ HRESULT RSManagerDX9::redirectScissorRect(CONST RECT* pRect) {
 }
 
 HRESULT RSManagerDX9::redirectGetSwapChain(UINT iSwapChain, IDirect3DSwapChain9** pSwapChain) {
-	SDLOG(4, "redirectGetSwapChain %u\n", iSwapChain);
-	SDLOG(4, "hookedSwapChain0: %p\n", hookedSwapChain0);
+	SDLOG(4, "redirectGetSwapChain {}\n", iSwapChain);
+	SDLOG(4, "hookedSwapChain0: {}\n", hookedSwapChain0);
 	HRESULT res = d3ddev->GetSwapChain(iSwapChain, pSwapChain);
 	if(iSwapChain == 0) {
-		SDLOG(4, "-> Hooked swapchain res: %d\n", res);
+		SDLOG(4, "-> Hooked swapchain res: {}\n", res);
 		if(res == D3D_OK) {
 			if(hookedSwapChain0 == nullptr) {
 				SDLOG(1, "Hooking swapchain 0\n");

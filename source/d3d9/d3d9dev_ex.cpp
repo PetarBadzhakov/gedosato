@@ -107,6 +107,6 @@ HRESULT APIENTRY hkIDirect3DDevice9Ex::ResetEx(D3DPRESENT_PARAMETERS* pPresentat
 
 HRESULT APIENTRY hkIDirect3DDevice9Ex::GetDisplayModeEx(UINT iSwapChain, D3DDISPLAYMODEEX* pMode, D3DDISPLAYROTATION* pRotation) {
 	RSManager::setLatest(rsMan);
-	SDLOG(4, "GetDisplayModeEx %u\n", iSwapChain);
+	SDLOG(4, "GetDisplayModeEx {}\n", iSwapChain);
 	return rsMan->redirectGetDisplayModeEx(iSwapChain, pMode, pRotation);
 }

@@ -3,7 +3,6 @@
 #include <string>
 #include <sstream>
 #include <vector>
-#include <boost/algorithm/string/predicate.hpp>
 using namespace std;
 
 #include "console.h"
@@ -17,11 +16,11 @@ Scaler::Scaler(IDirect3DDevice9 *device, int inputwidth, int inputheight, int wi
 	  levels(0), levelInputSizes(NULL), useSRGB(useSRGB) {
 	SDLOG(0, "Scaler construct\n");
 	// Determine initial scaling type from settings
-	if(boost::iequals(Settings::get().getScalingType(), string("bicubic"))) {
+	if(iequals(Settings::get().getScalingType(), string("bicubic"))) {
 		sType = BICUBIC;
-	} else if(boost::iequals(Settings::get().getScalingType(), string("lanczos"))) {
+	} else if(iequals(Settings::get().getScalingType(), string("lanczos"))) {
 		sType = LANCZOS;
-	} else if(boost::iequals(Settings::get().getScalingType(), string("nearest"))) {
+	} else if(iequals(Settings::get().getScalingType(), string("nearest"))) {
 		sType = NEAREST;
 	} else {
 		sType = BILINEAR;
@@ -34,7 +33,7 @@ Scaler::Scaler(IDirect3DDevice9 *device, int inputwidth, int inputheight, int wi
 	// generate multi-level buffers
 	levels = max( max(0, static_cast<int>(ceil(Log2(static_cast<double>(inputwidth)/width)-1))), 
 		          max(0, static_cast<int>(ceil(Log2(static_cast<double>(inputheight)/height)-1))) );
-	SDLOG(2, "Scaler: Generating %u multi-level buffers\n", levels);
+	SDLOG(2, "Scaler: Generating {} multi-level buffers\n", levels);
 	ss << "Downsampling: " << levels+1 << " level" << (levels?"s ":" ");
 	levelInputSizes = new FLOAT[levels*2+2];
 	levelInputSizes[levels*2+0] = static_cast<FLOAT>(width*2); 
@@ -46,15 +45,15 @@ Scaler::Scaler(IDirect3DDevice9 *device, int inputwidth, int inputheight, int wi
 		levelInputSizes[i*2+0] = static_cast<FLOAT>(w*2);
 		levelInputSizes[i*2+1] = static_cast<FLOAT>(h*2);
 		levelBuffers[i] = RSManager::getRTMan().createTexture(w, h, RenderTarget::FMT_ARGB_8);
-		SDLOG(2, "Multi-level buffer %u: %p - size: %ux%u\n", i, &*levelBuffers[i], w, h);
+		SDLOG(2, "Multi-level buffer {}: {} - size: {}x{}\n", i, &*levelBuffers[i], w, h);
 	}
 	levelInputSizes[0] = static_cast<FLOAT>(inputwidth);
 	levelInputSizes[1] = static_cast<FLOAT>(inputheight);
 	for(unsigned i=0; i<levels+1; i++) {
-		SDLOG(2, "Scaling step %u: input size: %5.0f x %5.0f\n", i, levelInputSizes[i*2+0], levelInputSizes[i*2+1]);
-		ss << format("%5.0f x %5.0f -> ", levelInputSizes[i*2+0], levelInputSizes[i*2+1]);
+		SDLOG(2, "Scaling step {}: input size: {:5.0f} x {:5.0f}\n", i, levelInputSizes[i*2+0], levelInputSizes[i*2+1]);
+		ss << strFormat("{:5.0f} x {:5.0f} -> ", levelInputSizes[i*2+0], levelInputSizes[i*2+1]);
 	}
-	ss << format("%5d x %5d", Settings::get().getPresentWidth(), Settings::get().getPresentHeight());
+	ss << strFormat("{:5} x {:5}", Settings::get().getPresentWidth(), Settings::get().getPresentHeight());
 	status = ss.str();
 	showStatus();
 }
@@ -82,7 +81,7 @@ void Scaler::reloadShader() {
 	ID3DXEffect* newEffect = NULL;
 	HRESULT hr = D3DXCreateEffectFromFile(device, getAssetFileName("scaling.fx").c_str(), &defines.front(), NULL, flags, NULL, &newEffect, &errors);
 	if(hr != D3D_OK) {
-		SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
+		SDLOG(0, "ERRORS:\n {}\n", errors->GetBufferPointer());
 		Console::get().add("Error compiling scaling.fx:");
 		Console::get().add(static_cast<const char*>(errors->GetBufferPointer()));
 	} else {
@@ -119,7 +118,7 @@ void Scaler::go(IDirect3DTexture9 *input, IDirect3DSurface9 *dst) {
 
 void Scaler::setScaling(scalingType t) {
 	sType = t;
-	Console::get().add(format("Set scaling type to %s", getScalingName()));
+	Console::get().add(strFormat("Set scaling type to {}", getScalingName()));
 }
 
 void Scaler::nextScaling() {
@@ -129,7 +128,7 @@ void Scaler::nextScaling() {
 }
 
 void Scaler::showStatus() {
-	Console::get().add(format("%s (%s scaling)", status.c_str(), getScalingName()));
+	Console::get().add(strFormat("{} ({} scaling)", status.c_str(), getScalingName()));
 }
 
 const char* Scaler::getScalingName() {

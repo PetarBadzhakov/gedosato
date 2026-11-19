@@ -18,7 +18,7 @@ hkID3D11Device::hkID3D11Device(ID3D11Device **ppID3D11Device) {
 	*ppID3D11Device = this;
 	pWrapped->AddRef();
 	auto postCount = pWrapped->Release() - RSManagerDX11::getInternalRefCount();
-	if(preCount != postCount) SDLOG(-1, "ERROR: DX11 internal reference count mismatch. %d references uncounted\n", postCount);
+	if(preCount != postCount) SDLOG(-1, "ERROR: DX11 internal reference count mismatch. {} references uncounted\n", postCount);
 }
 
 HRESULT APIENTRY hkID3D11Device::QueryInterface(REFIID riid, void **ppvObject) {
@@ -37,13 +37,13 @@ ULONG APIENTRY hkID3D11Device::Release() {
 	RSManager::setLatest(rsMan);
 	SDLOG(20, "hkID3D11Device::Release\n");
 	ULONG ret = pWrapped->Release();
-	SDLOG(20, "-> ret: %d\n", ret);
+	SDLOG(20, "-> ret: {}\n", ret);
 	if(ret == RSManagerDX11::getInternalRefCount()) {
 		SDLOG(2, "hkID3D11Device: only internal referencs left, start teardown\n");
 		pWrapped->AddRef();
 		delete rsMan;
 		auto count = pWrapped->Release();
-		if(count != 0) SDLOG(-1, "ERROR: DX11 cleanup incomplete. %d references left\n", count);
+		if(count != 0) SDLOG(-1, "ERROR: DX11 cleanup incomplete. {} references left\n", count);
 		InterfaceRegistry::get().unregisterWrapper(this);
 		delete this;
 		return count;
@@ -65,7 +65,7 @@ HRESULT APIENTRY hkID3D11Device::CreateTexture1D(const D3D11_TEXTURE1D_DESC *pDe
 
 HRESULT APIENTRY hkID3D11Device::CreateTexture2D(const D3D11_TEXTURE2D_DESC *pDesc, const D3D11_SUBRESOURCE_DATA *pInitialData, ID3D11Texture2D **ppTexture2D) {
 	RSManager::setLatest(rsMan);
-	SDLOG(10, "hkID3D11Device::CreateTexture2D\n%s-> init: %p\n", D3D11Texture2DDescToString(*pDesc), pInitialData);
+	SDLOG(10, "hkID3D11Device::CreateTexture2D\n{}-> init: {}\n", D3D11Texture2DDescToString(*pDesc), pInitialData);
 	if(pInitialData != nullptr && pDesc->ArraySize == 1 && pDesc->MipLevels == 1 && pDesc->Format == DXGI_FORMAT_R8G8B8A8_UNORM && Settings::get().getTextureScalingFactor() > 1) {
 		SDLOG(2, "SCALING!\n");
 		uint32_t *pixelData = (uint32_t*)pInitialData->pSysMem;
@@ -83,7 +83,7 @@ HRESULT APIENTRY hkID3D11Device::CreateTexture2D(const D3D11_TEXTURE2D_DESC *pDe
 			D3D11_TEXTURE2D_DESC replacementDesc = *pDesc;
 			replacementDesc.Height = Settings::get().getRenderHeight();
 			replacementDesc.Width = replacementDesc.Height*2;
-			SDLOG(-1, "Umihara render res: %u x %u\n", replacementDesc.Width, replacementDesc.Height);
+			SDLOG(-1, "Umihara render res: {} x {}\n", replacementDesc.Width, replacementDesc.Height);
 			return pWrapped->CreateTexture2D(&replacementDesc, pInitialData, ppTexture2D);
 		}
 	}

@@ -34,7 +34,7 @@ void DOF::reloadShader() {
 	D3DXMACRO pixelSizeMacro = { "PIXEL_SIZE", pixelSizeText.c_str() };
 	defines.push_back(pixelSizeMacro);
 
-	string radiusText = format("%f", baseRadius);
+	string radiusText = strFormat("{:f}", baseRadius);
 	D3DXMACRO radiusMacro = { "DOF_BASE_BLUR_RADIUS", radiusText.c_str() };
 	defines.push_back(radiusMacro);
 	
@@ -54,10 +54,10 @@ void DOF::reloadShader() {
 		case BASIC: shaderFn = "DOFPseudo.fx"; break;
 	}
 	shaderFn = getAssetFileName(shaderFn);
-	SDLOG(0, "%s load\n", shaderFn.c_str());	
+	SDLOG(0, "{} load\n", shaderFn.c_str());	
 	ID3DXBuffer* errors;
 	HRESULT hr = D3DXCreateEffectFromFile(device, shaderFn.c_str(), &defines.front(), NULL, flags, NULL, &effect, &errors);
-	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
+	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n {}\n", errors->GetBufferPointer());
 
 	// get handles
 	depthTexHandle = effect->GetParameterByName(NULL, "depthTex");

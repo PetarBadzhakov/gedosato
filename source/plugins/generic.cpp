@@ -29,9 +29,9 @@ void GenericPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3D
 	if(!Settings::get().getInjectRenderstate().empty()) {
 		auto str = Settings::get().getInjectRenderstate();
 		vector<string> strs;
-		boost::split(strs, str, boost::is_any_of(" ,"));
+		strs = splitAny(str, " ,");
 		if(strs.size() != 2) {
-			SDLOG(-1, "ERROR: %s is not a valid setting for InjectRenderstate", str.c_str());
+			SDLOG(-1, "ERROR: {} is not a valid setting for InjectRenderstate", str.c_str());
 		}
 		else {
 			injectRSType = std::stoul(strs[0]);
@@ -41,13 +41,13 @@ void GenericPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3D
 }
 
 void GenericPlugin::reportStatus() {
-	Console::get().add(format("Running on executable %s (%s)", getExeFileName().c_str(), getListedName().c_str()));
+	Console::get().add(strFormat("Running on executable {} ({})", getExeFileName().c_str(), getListedName().c_str()));
 	if(doAA && (smaa || fxaa)) {
-		if(smaa) Console::get().add(format("SMAA enabled, quality level %d", Settings::get().getAAQuality()));
-		else Console::get().add(format("FXAA enabled, quality level %d", Settings::get().getAAQuality()));
+		if(smaa) Console::get().add(strFormat("SMAA enabled, quality level {}", Settings::get().getAAQuality()));
+		else Console::get().add(strFormat("FXAA enabled, quality level {}", Settings::get().getAAQuality()));
 	}
 	else Console::get().add("AA disabled");
-	if(post && doPost) Console::get().add(format("Postprocessing enabled, type %s", Settings::get().getPostProcessingType().c_str()));
+	if(post && doPost) Console::get().add(strFormat("Postprocessing enabled, type {}", Settings::get().getPostProcessingType().c_str()));
 	else Console::get().add("Postprocessing disabled");
 }
 

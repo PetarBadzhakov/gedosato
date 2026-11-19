@@ -3,7 +3,7 @@
 #include <fstream>
 #include <string>
 #include <regex>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "main.h"
 #include "window_manager.h"
@@ -20,7 +20,7 @@ void ResolutionSettings::readResolution(const char* source) {
 		resolutions.emplace_back(std::atoi(results[1].str().c_str()), std::atoi(results[2].str().c_str()), std::atoi(results[3].str().c_str()));
 	}
 	else {
-		SDLOG(-1, "ERROR: ill-formatted resolution string: %s\n", source);
+		SDLOG(-1, "ERROR: ill-formatted resolution string: {}\n", source);
 	}
 }
 
@@ -57,7 +57,7 @@ void Settings::clearAll() {
 }
 
 void Settings::load(const string &fn) {
-	if(!boost::filesystem::exists(fn)) return;
+	if(!std::filesystem::exists(fn)) return;
 	std::ifstream sfile;
 	sfile.open(fn, std::ios::in);
 	while(!sfile.eof()) {
@@ -176,37 +176,37 @@ void Settings::read(const char* source, float& value) {
 
 void Settings::read(const char* source, std::string& value) {
 	value.assign(source);
-	boost::algorithm::trim(value);
+	value = trim(value);
 }
 
 void Settings::read(const char* source, std::vector<std::string>& value) {
 	string src {source};	
-	boost::algorithm::trim(src);
+	src = trim(src);
 	value.push_back(src);
 }
 
 // logging --------------------------------------------------------------------
 
 void Settings::log(const char* name, bool value) {
-	SDLOG(0, " - %s : %s\n", name, value ? "true" : "false");
+	SDLOG(0, " - {} : {}\n", name, value ? "true" : "false");
 }
 
 void Settings::log(const char* name, int value) {
-	SDLOG(0, " - %s : %d\n", name, value);
+	SDLOG(0, " - {} : {}\n", name, value);
 }
 
 void Settings::log(const char* name, unsigned value) {
-	SDLOG(0, " - %s : %u\n", name, value);
+	SDLOG(0, " - {} : {}\n", name, value);
 }
 
 void Settings::log(const char* name, float value) {
-	SDLOG(0, " - %s : %f\n", name, value);
+	SDLOG(0, " - {} : {:f}\n", name, value);
 }
 
 void Settings::log(const char* name, const std::string& value) {
-	SDLOG(0, " - %s : %s\n", name, value.c_str());
+	SDLOG(0, " - {} : {}\n", name, value.c_str());
 }
 
 void Settings::log(const char* name, const std::vector<std::string>& value) {
-	SDLOG(0, " - %s : %s\n", name, boost::algorithm::join(value, ", "));
+	SDLOG(0, " - {} : {}\n", name, join(value, ", "));
 }

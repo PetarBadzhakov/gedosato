@@ -18,7 +18,7 @@ public:
 	virtual ~FF13Plugin();
 
 	virtual void initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3DFORMAT dssformat) override;
-	virtual void FF13Plugin::reportStatus() override;
+	virtual void reportStatus() override;
 
 	virtual void prePresent() override;
 

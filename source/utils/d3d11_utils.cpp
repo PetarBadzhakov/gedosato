@@ -4,7 +4,7 @@
 #include "utils/dxgi_utils.h"
 #include "utils/string_utils.h"
 
-TCHAR* D3D11UsageToString(D3D11_USAGE usage) {
+const char* D3D11UsageToString(D3D11_USAGE usage) {
 	switch(usage) {
 	case D3D11_USAGE_DEFAULT: return "D3D11_USAGE_DEFAULT";
 	case D3D11_USAGE_IMMUTABLE: return "D3D11_USAGE_IMMUTABLE";
@@ -28,7 +28,7 @@ std::string D3D11Texture2DDescToString(const D3D11_TEXTURE2D_DESC& desc) {
 		UINT             MiscFlags;
 	} D3D11_TEXTURE2D_DESC;
 
-	return format("Texture2DDesc:\n - size: %4ux%4u | mip: %2u | arr_s: %3u\n - format: %s\n - usage: %s | rt: %u | depth/stencil: %u\n - flags: bind=%p, cpu=%p, misc=%p\n",
+	return strFormat("Texture2DDesc:\n - size: {:4}x{:4} | mip: {:2} | arr_s: {:3}\n - format: {}\n - usage: {} | rt: {} | depth/stencil: {}\n - flags: bind={}, cpu={}, misc={}\n",
 		desc.Width, desc.Height, desc.MipLevels, desc.ArraySize,
 		DxgiFormatToString(desc.Format), D3D11UsageToString(desc.Usage), desc.BindFlags & D3D11_BIND_RENDER_TARGET, desc.BindFlags & D3D11_BIND_DEPTH_STENCIL, 
 		desc.BindFlags, desc.CPUAccessFlags, desc.MiscFlags);

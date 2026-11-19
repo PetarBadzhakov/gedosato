@@ -66,9 +66,9 @@ double D3DPerfMonitor::getCurrent() {
 		auto frequency = frequencyQuery.getUIntData();
 		auto startTime = startQuery.getUIntData();
 		auto endTime = endQuery.getUIntData();
-		if(disjoint.is_initialized() && !disjoint.get()) {
-			if(frequency.is_initialized() && startTime.is_initialized() && endTime.is_initialized()) {
-				avg.add(((endTime.get() - startTime.get())*1000.0) / frequency.get());
+		if(disjoint.has_value() && !disjoint.value()) {
+			if(frequency.has_value() && startTime.has_value() && endTime.has_value()) {
+				avg.add(((endTime.value() - startTime.value())*1000.0) / frequency.value());
 				inProgress = false;
 			}
 		}

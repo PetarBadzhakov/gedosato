@@ -7,8 +7,6 @@
 #include <sstream>
 #include <algorithm>
 
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
 
 #include <d3dx11effect.h>
 #include <d3dcompiler.h>
@@ -22,7 +20,7 @@ Console* Console::latest = nullptr;
 float ConsoleLine::draw(float y) {
 	if(ypos<0.0f) ypos = y;
 	else ypos += (y-ypos)*0.2f; 
-	SDLOG(15, "Printed: %s at %f\n", msg, (10.0f + ypos));
+	SDLOG(15, "Printed: {} at {:f}\n", msg, (10.0f + ypos));
 	Console::get().print(25.0f, (39.0f + ypos), msg.c_str());
 	return t.elapsed() > Settings::get().getMessageSeconds()*1000000.0 ? 0.0f : 38.0f + ypos;
 }
@@ -39,17 +37,15 @@ void Console::setLatest(Console *c) {
 }
 
 void Console::setSize(int w, int h) {
-	SDLOG(-1, "Console setSize %dx%d\n", w, h);
+	SDLOG(-1, "Console setSize {}x{}\n", w, h);
 	width = w;
 	height = h;
 }
 
 void Console::add(const string& msg) {
-	SDLOG(1, "Console add: %s\n", msg.c_str());
+	SDLOG(1, "Console add: {}\n", msg.c_str());
 	if(Settings::get().getMessageSeconds() > 0) {
-		std::vector<std::string> splitstring;
-		boost::algorithm::split(splitstring, msg, boost::is_any_of("\n\r"));
-		for(const auto& s : splitstring) lines.push_back(ConsoleLine(s));
+		for(const auto& s : splitAny(msg, "\n\r")) lines.push_back(ConsoleLine(s));
 		lineHeight = 1.0f;
 	}
 }
@@ -148,7 +144,7 @@ const D3DVERTEXELEMENT9 ConsoleDX9::vertexElements[3] = {
 };
 
 ConsoleDX9::ConsoleDX9(IDirect3DDevice9* device, int w, int h) : Console(w, h), device(device) {
-	SDLOG(0, "Initializing DX9 Console on device %p\n", device);
+	SDLOG(0, "Initializing DX9 Console on device {}\n", device);
 	
 	// Create font
 	SDLOG(2, " - creating console font\n");
@@ -185,7 +181,7 @@ ConsoleDX9::ConsoleDX9(IDirect3DDevice9* device, int w, int h) : Console(w, h), 
 	SDLOG(2, " - actually load effect\n");	
 	ID3DXBuffer* errors;
 	HRESULT hr = D3DXCreateEffectFromFile(device, getAssetFileName("console.fx").c_str(), &defines.front(), NULL, flags, NULL, &effect, &errors);
-	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
+	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n {}\n", errors->GetBufferPointer());
 
 	// get handles
 	rectColorHandle = effect->GetParameterByName(NULL, "rectColor");
@@ -260,7 +256,7 @@ struct VertexType {
 };
 
 ConsoleDX11::ConsoleDX11(ID3D11Device* device, RSManagerDX11* manager, int w, int h) : Console(w,h), device(device) {
-	SDLOG(0, "Initializing DX11 Console on device %p, wxh: %dx%d\n", device, width, height);
+	SDLOG(0, "Initializing DX11 Console on device {}, wxh: {}x{}\n", device, width, height);
 	DX11InternalRefHelper helper(device, manager);
 
 	// Create font
@@ -323,7 +319,7 @@ ConsoleDX11::ConsoleDX11(ID3D11Device* device, RSManagerDX11* manager, int w, in
 	D3D_SHADER_MACRO defines[] = { { "DX11", "1" }, {nullptr, nullptr} };
 	ID3DBlob *errors;
 	auto effectHr = D3DX11CompileEffectFromFile(strToWStr(getAssetFileName("console.fx")).c_str(), defines, nullptr, D3DCOMPILE_OPTIMIZATION_LEVEL2 | D3DCOMPILE_ENABLE_BACKWARDS_COMPATIBILITY, 0, device, &effect, &errors);
-	CHECKHR(effectHr, "Console: failed to create effect:\n%s", (char*)errors->GetBufferPointer());
+	CHECKHR(effectHr, "Console: failed to create effect:\n{}", (char*)errors->GetBufferPointer());
 	
 	// Set variables
 	auto rectColorVar = effect->GetVariableByName("rectColor")->AsVector();

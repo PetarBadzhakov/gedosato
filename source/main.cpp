@@ -3,15 +3,12 @@
 #include <iostream>
 #include <thread>
 #include <fstream>
-#include <locale>
-#include <codecvt>
 #include <stdio.h>
 #include <time.h>
 #include <sys/types.h>
 #include <sys/timeb.h>
 
-#include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "utils/win_utils.h"
 #include "main.h"
@@ -31,7 +28,7 @@ bool g_active = false, g_tool = false;
 
 extern "C" __declspec(dllexport) const char* GeDoSaToVersion() {
 	static string verString;
-	if(verString.empty()) verString = format("%s \"%s\" (%s/%s)", VER_STRING, VER_NAME, EDITION, MODE_STRING);
+	if(verString.empty()) verString = strFormat("{} \"{}\" ({}/{})", VER_STRING, VER_NAME, EDITION, MODE_STRING);
 	return verString.c_str();
 }
 
@@ -63,22 +60,22 @@ extern "C" __declspec(dllexport) void GeDoSaToInit() {
 	}
 
 	g_active = true;
-	OutputDebugString(format("GeDoSaTo: Active on %s\n", getExeFileName()).c_str());
+	OutputDebugString(strFormat("GeDoSaTo: Active on {}\n", getExeFileName()).c_str());
 
 	// initialize log
-	string logFn = format("logs\\%s_%s.log", getExeFileName().c_str(), getTimeString().c_str());
+	string logFn = strFormat("logs\\{}_{}.log", getExeFileName().c_str(), getTimeString().c_str());
 	std::replace(logFn.begin(), logFn.end(), ':', '-');
 	std::replace(logFn.begin(), logFn.end(), ' ', '_');
 	logFn = getInstalledFileName(logFn);
 	fopen_s(&g_oFile, logFn.c_str(), "w");
-	if(!g_oFile) OutputDebugString(format("GeDoSaTo: Error opening log fn %s\n", logFn.c_str()).c_str());
-	else OutputDebugString(format("GeDoSaTo: Opening log fn %s, handle: %p\n", logFn.c_str(), g_oFile).c_str());
+	if(!g_oFile) OutputDebugString(strFormat("GeDoSaTo: Error opening log fn {}\n", logFn.c_str()).c_str());
+	else OutputDebugString(strFormat("GeDoSaTo: Opening log fn {}, handle: {}\n", logFn.c_str(), g_oFile).c_str());
 	OutputDebugString("GeDoSaTo: Log file initialized, let that take over\n");
 
 	// startup
-	SDLOG(-1, "===== %s =====\n", getTimeString().c_str());
-	SDLOG(-1, "===== start " INTERCEPTOR_NAME " %s = fn: %s\n", GeDoSaToVersion(), getExeFileName().c_str());
-	SDLOG(-1, "===== installation directory: %s\n", getInstallDirectory().c_str());
+	SDLOG(-1, "===== {} =====\n", getTimeString().c_str());
+	SDLOG(-1, "===== start " INTERCEPTOR_NAME " {} = fn: {}\n", GeDoSaToVersion(), getExeFileName().c_str());
+	SDLOG(-1, "===== installation directory: {}\n", getInstallDirectory().c_str());
 
 	// load settings
 	Settings::get().load();
@@ -115,7 +112,7 @@ BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 		DisableThreadLibraryCalls(hDll);
 	}
 	if(dwReason == DLL_PROCESS_DETACH) {
-		OutputDebugString(format("GeDoSaTo: Exiting from %s\n", getExeFileName()).c_str());
+		OutputDebugString(strFormat("GeDoSaTo: Exiting from {}\n", getExeFileName()).c_str());
 		if(g_active) {
 			OutputDebugString("GeDoSaTo: was active\n");
 			Settings::get().shutdown();
@@ -166,12 +163,12 @@ string getInstalledFileName(string filename) {
 }
 string getAssetFileName(string filename) {
 	string fn = getInstallDirectory() + "assets\\" + filename;
-	if(boost::filesystem::exists(fn)) return fn;
+	if(std::filesystem::exists(fn)) return fn;
 	fn = getInstallDirectory() + "assets\\dx9\\" + filename;
-	if(boost::filesystem::exists(fn)) return fn;
+	if(std::filesystem::exists(fn)) return fn;
 	fn = getInstallDirectory() + "assets\\dx11\\" + filename;
-	if(boost::filesystem::exists(fn)) return fn;
-	SDLOG(-1, "ERROR: couldn't find asset file %s\n", filename);
+	if(std::filesystem::exists(fn)) return fn;
+	SDLOG(-1, "ERROR: couldn't find asset file {}\n", filename);
 	return filename;
 }
 string getConfigFileName(string filename) {
@@ -194,9 +191,13 @@ string getTimeString(bool forDisplay) {
 	return string(timebuf);
 }
 
+// Paths and names in GeDoSaTo are in the process code page (A-APIs), so convert from CP_ACP.
 std::wstring strToWStr(const string& input) {
-	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-	return converter.from_bytes(input);
+	if(input.empty()) return std::wstring();
+	const int size = MultiByteToWideChar(CP_ACP, 0, input.data(), static_cast<int>(input.size()), nullptr, 0);
+	std::wstring result(size, L'\0');
+	MultiByteToWideChar(CP_ACP, 0, input.data(), static_cast<int>(input.size()), result.data(), size);
+	return result;
 }
 
 bool fileExists(const char *filename) {

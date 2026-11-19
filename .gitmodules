@@ -1,0 +1,10 @@
+[submodule "ext/minhook"]
+	path = ext/minhook
+	url = https://github.com/TsudaKageyu/minhook.git
+[submodule "ext/nvapi"]
+	path = ext/nvapi
+	url = https://github.com/NVIDIA/nvapi.git
+	shallow = true
+[submodule "ext/fx11"]
+	path = ext/fx11
+	url = https://github.com/microsoft/FX11.git

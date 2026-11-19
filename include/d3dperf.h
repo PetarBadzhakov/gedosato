@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include <boost/optional/optional.hpp>
-using boost::optional;
+#include <optional>
+using std::optional;
 
 #include "main.h"
 #include "settings.h"

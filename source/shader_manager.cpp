@@ -24,7 +24,7 @@ bool ShaderManager::isInjectionVSInternal(const string& name) const {
 }
 
 void ShaderManager::registerShaderInternal(CONST DWORD* pFunction, void* pShader) {
-	SDLOG(3, "ShaderManager: registering shader %p from %p.\n", pShader, pFunction);
+	SDLOG(3, "ShaderManager: registering shader {} from {}.\n", pShader, pFunction);
 	LPD3DXBUFFER disassembly;
 	HRESULT hr = D3DXDisassembleShader(pFunction, true, "", &disassembly);
 	if(!SUCCEEDED(hr)) {
@@ -32,7 +32,7 @@ void ShaderManager::registerShaderInternal(CONST DWORD* pFunction, void* pShader
 		return;
 	}
 	UINT32 id = SuperFastHash(static_cast<char*>(disassembly->GetBufferPointer()), disassembly->GetBufferSize());
-	SDLOG(8, " -> Shader code (hash %08x):\n%s\n===============\n", id, static_cast<char*>(disassembly->GetBufferPointer()));
+	SDLOG(8, " -> Shader code (hash {:08x}):\n{}\n===============\n", id, static_cast<char*>(disassembly->GetBufferPointer()));
 	if(Settings::get().getTrackShaders()) shaderPtrIdMap.emplace(pShader, id);
 
 	// given names
@@ -45,10 +45,10 @@ void ShaderManager::registerShaderInternal(CONST DWORD* pFunction, void* pShader
 	#undef SHADER
 
 	// name fallback
-	string name = format("%08x", id);
+	string name = strFormat("{:08x}", id);
 	if(shaderPtrNameMap.find(pShader) == shaderPtrNameMap.end()) {
 		if(Settings::get().getTrackShaders() || isInjectionPSInternal(name) || isInjectionVSInternal(name) || isAOInjectionShaderInternal(name)) {
-			SDLOG(2, "Found relevant shader hash: %s", name);
+			SDLOG(2, "Found relevant shader hash: {}", name);
 			shaderPtrNameMap.emplace(pShader, name);
 		}
 	}

@@ -70,7 +70,7 @@ HRESULT StrangerOfSwordCityPlugin::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE Prim
 		// then adjust coordiantes
 		for(int vert = 0; vert < 4; ++vert) {
 			for(size_t i = 0; i < floatStride; ++i) {
-				SDLOG(20, "%8.4f ", vertexData[i]);
+				SDLOG(20, "{:8.4f} ", vertexData[i]);
 				float& val = vertexData[i + vert*floatStride];
 				// vertex coords
 				if(i == 0) val *= 3;

@@ -61,10 +61,10 @@ HRESULT APIENTRY hkIDXGIFactory::GetParent(REFIID riid, void **ppParent) {
 }
 
 HRESULT APIENTRY hkIDXGIFactory::EnumAdapters(UINT Adapter, IDXGIAdapter **ppAdapter) {
-	SDLOG(20, "hkIDXGIFactory::EnumAdapters %d %p\n", Adapter, ppAdapter);
+	SDLOG(20, "hkIDXGIFactory::EnumAdapters {} {}\n", Adapter, ppAdapter);
 	HRESULT res = pWrapped->EnumAdapters(Adapter, ppAdapter);
 	if(SUCCEEDED(res)) {
-		SDLOG(20, "--> Success, wrapping %p\n", *ppAdapter);
+		SDLOG(20, "--> Success, wrapping {}\n", *ppAdapter);
 		*ppAdapter = InterfaceRegistry::get().getWrappedInterface<IDXGIAdapter>(*ppAdapter);
 	}
 	return res;
@@ -81,10 +81,10 @@ HRESULT APIENTRY hkIDXGIFactory::GetWindowAssociation(HWND *pWindowHandle) {
 }
 
 HRESULT APIENTRY hkIDXGIFactory::CreateSwapChain(IUnknown *pDevice, DXGI_SWAP_CHAIN_DESC *pDesc, IDXGISwapChain **ppSwapChain) {
-	SDLOG(2, "hkIDXGIFactory::CreateSwapChain with device %p, requested:\n%s\n", pDevice, DxgiSwapChainDescToString(*pDesc));
+	SDLOG(2, "hkIDXGIFactory::CreateSwapChain with device {}, requested:\n{}\n", pDevice, DxgiSwapChainDescToString(*pDesc));
 	HRESULT hr = RSManager::getDX11().redirectCreateSwapChain(pWrapped, pDevice, pDesc, ppSwapChain);
 	if(SUCCEEDED(hr) && ppSwapChain != NULL && *ppSwapChain != NULL) {
-		SDLOG(2, " -> hkIDXGIFactory::CreateSwapChain hooked, received:\n%s\n", DxgiSwapChainDescToString(*pDesc));
+		SDLOG(2, " -> hkIDXGIFactory::CreateSwapChain hooked, received:\n{}\n", DxgiSwapChainDescToString(*pDesc));
 		*ppSwapChain = InterfaceRegistry::get().getWrappedInterface<IDXGISwapChain>(*ppSwapChain);
 	}
 	return hr;

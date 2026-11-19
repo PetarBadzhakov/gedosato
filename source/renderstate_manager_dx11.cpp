@@ -36,7 +36,7 @@ HRESULT RSManagerDX11::redirectCreateSwapChain(IDXGIFactory* factory, IUnknown *
 	HRESULT ret;
 	renderWidth = pDesc->BufferDesc.Width;
 	renderHeight = pDesc->BufferDesc.Height;
-	SDLOG(2, "RedirectCreateSwapChain dev: %p | RSDev: %p\n", pDevice, d3ddev);
+	SDLOG(2, "RedirectCreateSwapChain dev: {} | RSDev: {}\n", pDevice, d3ddev);
 	console->setSize(renderWidth, renderHeight);
 
 	if(Settings::getResSettings().setDSRes(pDesc->BufferDesc.Width, pDesc->BufferDesc.Height)) {
@@ -68,7 +68,7 @@ HRESULT RSManagerDX11::redirectCreateSwapChain(IDXGIFactory* factory, IUnknown *
 			bufferDesc.MiscFlags = 0;
 			for(unsigned i = 0; i < numBackBuffers; ++i) {
 				d3ddev->CreateTexture2D(&bufferDesc, NULL, &backBuffers[i]);
-				SDLOG(1, " - redirectCreateSwapChain allocated backbuffers %u\n", i);
+				SDLOG(1, " - redirectCreateSwapChain allocated backbuffers {}\n", i);
 			}
 		}
 	}

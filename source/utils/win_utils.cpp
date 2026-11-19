@@ -161,7 +161,73 @@ const char* GetDeviceCapsParamToString(int index) {
 
 string RectToString(const RECT* rect) {
 	if(!rect) return string("NULL_RECT");
-	return format("RECT[%4ld..%4ld/%4ld..%4ld]", rect->left, rect->right, rect->top, rect->bottom);
+	return strFormat("RECT[{:4}..{:4}/{:4}..{:4}]", rect->left, rect->right, rect->top, rect->bottom);
+}
+
+string narrow(const wchar_t* text) {
+	if(!text) return string("NULL");
+	const int size = WideCharToMultiByte(CP_ACP, 0, text, -1, nullptr, 0, nullptr, nullptr);
+	if(size <= 1) return string();
+	string result(size - 1, '\0');
+	WideCharToMultiByte(CP_ACP, 0, text, -1, result.data(), size, nullptr, nullptr);
+	return result;
+}
+
+namespace {
+	// Direct3D 9 errors have no system message text, so name them here.
+	const char* d3d9ErrorName(HRESULT hr) {
+		switch(hr) {
+		case D3DERR_WRONGTEXTUREFORMAT: return "D3DERR_WRONGTEXTUREFORMAT";
+		case D3DERR_UNSUPPORTEDCOLOROPERATION: return "D3DERR_UNSUPPORTEDCOLOROPERATION";
+		case D3DERR_UNSUPPORTEDCOLORARG: return "D3DERR_UNSUPPORTEDCOLORARG";
+		case D3DERR_UNSUPPORTEDALPHAOPERATION: return "D3DERR_UNSUPPORTEDALPHAOPERATION";
+		case D3DERR_UNSUPPORTEDALPHAARG: return "D3DERR_UNSUPPORTEDALPHAARG";
+		case D3DERR_TOOMANYOPERATIONS: return "D3DERR_TOOMANYOPERATIONS";
+		case D3DERR_CONFLICTINGTEXTUREFILTER: return "D3DERR_CONFLICTINGTEXTUREFILTER";
+		case D3DERR_UNSUPPORTEDFACTORVALUE: return "D3DERR_UNSUPPORTEDFACTORVALUE";
+		case D3DERR_CONFLICTINGRENDERSTATE: return "D3DERR_CONFLICTINGRENDERSTATE";
+		case D3DERR_UNSUPPORTEDTEXTUREFILTER: return "D3DERR_UNSUPPORTEDTEXTUREFILTER";
+		case D3DERR_CONFLICTINGTEXTUREPALETTE: return "D3DERR_CONFLICTINGTEXTUREPALETTE";
+		case D3DERR_DRIVERINTERNALERROR: return "D3DERR_DRIVERINTERNALERROR";
+		case D3DERR_NOTFOUND: return "D3DERR_NOTFOUND";
+		case D3DERR_MOREDATA: return "D3DERR_MOREDATA";
+		case D3DERR_DEVICELOST: return "D3DERR_DEVICELOST";
+		case D3DERR_DEVICENOTRESET: return "D3DERR_DEVICENOTRESET";
+		case D3DERR_NOTAVAILABLE: return "D3DERR_NOTAVAILABLE";
+		case D3DERR_OUTOFVIDEOMEMORY: return "D3DERR_OUTOFVIDEOMEMORY";
+		case D3DERR_INVALIDDEVICE: return "D3DERR_INVALIDDEVICE";
+		case D3DERR_INVALIDCALL: return "D3DERR_INVALIDCALL";
+		case D3DERR_DRIVERINVALIDCALL: return "D3DERR_DRIVERINVALIDCALL";
+		case D3DERR_WASSTILLDRAWING: return "D3DERR_WASSTILLDRAWING";
+		case D3DERR_DEVICEREMOVED: return "D3DERR_DEVICEREMOVED";
+		case D3DERR_DEVICEHUNG: return "D3DERR_DEVICEHUNG";
+		case D3DERR_UNSUPPORTEDOVERLAY: return "D3DERR_UNSUPPORTEDOVERLAY";
+		case D3DERR_UNSUPPORTEDOVERLAYFORMAT: return "D3DERR_UNSUPPORTEDOVERLAYFORMAT";
+		case D3DERR_CANNOTPROTECTCONTENT: return "D3DERR_CANNOTPROTECTCONTENT";
+		case D3DERR_UNSUPPORTEDCRYPTO: return "D3DERR_UNSUPPORTEDCRYPTO";
+		case D3DERR_PRESENT_STATISTICS_DISJOINT: return "D3DERR_PRESENT_STATISTICS_DISJOINT";
+		case E_OUTOFMEMORY: return "E_OUTOFMEMORY";
+		case E_INVALIDARG: return "E_INVALIDARG";
+		case E_NOTIMPL: return "E_NOTIMPL";
+		case E_FAIL: return "E_FAIL";
+		}
+		return nullptr;
+	}
+}
+
+string hresultName(HRESULT hr) {
+	const char* name = d3d9ErrorName(hr);
+	return strFormat("{} (0x{:08X})", name ? name : "HRESULT", static_cast<unsigned long>(hr));
+}
+
+string hresultDescription(HRESULT hr) {
+	char* buffer = nullptr;
+	const DWORD length = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		nullptr, static_cast<DWORD>(hr), 0, reinterpret_cast<char*>(&buffer), 0, nullptr);
+	if(length == 0 || !buffer) return string("no system description");
+	string text = trim(std::string_view(buffer, length));
+	LocalFree(buffer);
+	return text;
 }
 
 DWORD RunSilent(const char* command) {
@@ -169,7 +235,7 @@ DWORD RunSilent(const char* command) {
 	PROCESS_INFORMATION ProcessInfo;
 	char Args[4096];
 	char *pEnvCMD = NULL;
-	char *pDefaultCMD = "CMD.EXE";
+	const char *pDefaultCMD = "CMD.EXE";
 	ULONG rc;
 	
 	memset(&StartupInfo, 0, sizeof(StartupInfo));
@@ -223,10 +289,10 @@ void forceLFHs() {
 		ULONG HeapInformation = HEAP_LFH;
 		BOOL res = HeapSetInformation(heaps[i], HeapCompatibilityInformation, &HeapInformation, sizeof(HeapInformation));
 		if(res != FALSE) {
-			SDLOG(1, "Low-fragmentation heap enabled for heap #%d.\n", i);
+			SDLOG(1, "Low-fragmentation heap enabled for heap #{}.\n", i);
 		}
 		else {
-			SDLOG(1, "Failed to enable low-fragmentation for heap #%d; LastError %d.\n", i, GetLastError());
+			SDLOG(1, "Failed to enable low-fragmentation for heap #{}; LastError {}.\n", i, GetLastError());
 		}
 	}
 	SDLOG(2, "Completed heap adjustment (LFH)\n");

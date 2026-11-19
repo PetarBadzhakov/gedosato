@@ -5,7 +5,7 @@
 #include <vector>
 using namespace std;
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "settings.h"
 #include "renderstate_manager_dx9.h"
@@ -30,7 +30,7 @@ SSAO::SSAO(IDirect3DDevice9 *device, int bbWidth, int bbHeight, int width, int h
 	// TODO check what would happen when using very exotic AR with this flag on
 	if(bbHeight * 16 > bbWidth * 9) {
 		if(((float)width / height > (float)bbWidth / bbHeight)) {
-			SDLOG(6, "[GenericDepthPlugin] Correcting aspect ratio for our depth texture, computing and applying new proper AR height (%d -> %d)\n", height, bbHeight);
+			SDLOG(6, "[GenericDepthPlugin] Correcting aspect ratio for our depth texture, computing and applying new proper AR height ({} -> {})\n", height, bbHeight);
 			isAspectRatioFix = true;
 		}
 	}
@@ -58,7 +58,7 @@ void SSAO::reloadShader() {
 	defines.push_back(pixelSizeMacro);
 
 	// Setup screen size macro
-	string screenSizeText = format("float2(%d,%d)", dwidth, dheight);
+	string screenSizeText = strFormat("float2({},{})", dwidth, dheight);
 	D3DXMACRO screenSizeMacro = { "SCREEN_SIZE", screenSizeText.c_str() };
 	defines.push_back(screenSizeMacro);
 
@@ -105,15 +105,15 @@ void SSAO::reloadShader() {
 	case VSSAO2: shaderFn = "VSSAO2.fx"; break;
 	}
 	string customfn = getConfigFileName(getExeFileName() + "\\" + shaderFn);
-	if(boost::filesystem::exists(customfn)) shaderFn = customfn;
+	if(std::filesystem::exists(customfn)) shaderFn = customfn;
 	else shaderFn = getAssetFileName(shaderFn);
-	SDLOG(0, "%s load, scale %s, strength %s\n", shaderFn.c_str(), scaleText.c_str(), strengthMacros[strength].Name);
+	SDLOG(0, "{} load, scale {}, strength {}\n", shaderFn.c_str(), scaleText.c_str(), strengthMacros[strength].Name);
 	ID3DXBuffer* errors;
 	ID3DXEffect* newEffect;
 	HRESULT hr = D3DXCreateEffectFromFile(device, shaderFn.c_str(), &defines.front(), NULL, flags, NULL, &newEffect, &errors);
 	if(hr != D3D_OK) {
-		SDLOG(-1, "ERRORS:\n %s\n", errors->GetBufferPointer());
-		Console::get().add(format("Error compiling %s:", shaderFn.c_str()));
+		SDLOG(-1, "ERRORS:\n {}\n", errors->GetBufferPointer());
+		Console::get().add(strFormat("Error compiling {}:", shaderFn.c_str()));
 		Console::get().add(static_cast<const char*>(errors->GetBufferPointer()));
 	}
 	else {

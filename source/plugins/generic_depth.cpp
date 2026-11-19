@@ -29,12 +29,12 @@ void GenericDepthPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat
 		GenericPlugin::redirectSetDepthStencilSurface(depthTexture->getSurface());
 
 		if(Settings::get().getEnableDoF()) {
-			SDLOG(6, "[GenericDepthPlugin] DOF dimensions -> Backbuffer width: %d, Backbuffer height: %d, Depthwidth: %d, Depthheight: %d\n", drw, drh, drw, drh);
+			SDLOG(6, "[GenericDepthPlugin] DOF dimensions -> Backbuffer width: {}, Backbuffer height: {}, Depthwidth: {}, Depthheight: {}\n", drw, drh, drw, drh);
 			dof = new DOF(d3ddev, drw, drh, (Settings::get().getDOFType() == "bokeh") ? DOF::BOKEH : DOF::BASIC, Settings::get().getDOFBaseRadius(), true);
 		}
 
 		if(Settings::get().getSsaoStrength() > 0) {
-			SDLOG(6, "[GenericDepthPlugin] SSAO dimensions -> Backbuffer width: %d, Backbuffer height: %d, Depthwidth: %d, Depthheight: %d\n", drw, drh, drw, drh);
+			SDLOG(6, "[GenericDepthPlugin] SSAO dimensions -> Backbuffer width: {}, Backbuffer height: {}, Depthwidth: {}, Depthheight: {}\n", drw, drh, drw, drh);
 			ssao = new SSAO(d3ddev, drw, drh, drw, drh, Settings::get().getSsaoStrength() - 1, 
 							Settings::get().getSsaoType() == "VSSAO2" ? SSAO::VSSAO2 : 
 							Settings::get().getSsaoType() == "SAO" ? SSAO::SAO: Settings::get().getSsaoType() == "HBAO" ? SSAO::HBAO : SSAO::MSSAO,
@@ -45,9 +45,9 @@ void GenericDepthPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat
 
 void GenericDepthPlugin::reportStatus() {
 	GenericPlugin::reportStatus();
-	if(ssao && doAO) Console::get().add(format("SSAO enabled, strength %d, scale %d, blur %s", Settings::get().getSsaoStrength(), Settings::get().getSsaoScale(), Settings::get().getSsaoBlurType().c_str()));
+	if(ssao && doAO) Console::get().add(strFormat("SSAO enabled, strength {}, scale {}, blur {}", Settings::get().getSsaoStrength(), Settings::get().getSsaoScale(), Settings::get().getSsaoBlurType().c_str()));
 	else Console::get().add("SSAO disabled");
-	if(dof && doDof) Console::get().add(format("DoF enabled, type %s, base blur size %f", Settings::get().getDOFType().c_str(), Settings::get().getDOFBaseRadius()));
+	if(dof && doDof) Console::get().add(strFormat("DoF enabled, type {}, base blur size {:f}", Settings::get().getDOFType().c_str(), Settings::get().getDOFBaseRadius()));
 	else Console::get().add("DoF disabled");
 }
 
@@ -120,7 +120,7 @@ void GenericDepthPlugin::process(IDirect3DSurface9* backBuffer) {
 
 HRESULT GenericDepthPlugin::redirectCreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle) {
 	if(Width >= dssw || Height >= dssh) {
-		SDLOG(6, "[GenericDepthPlugin] found surface to replace -in CreateDepthStencilSurface- (%4dx%4d), format: %s\n", Width, Height, D3DFormatToString(Format));
+		SDLOG(6, "[GenericDepthPlugin] found surface to replace -in CreateDepthStencilSurface- ({:4}x{:4}), format: {}\n", Width, Height, D3DFormatToString(Format));
 		dssw = Width; dssh = Height;
 	}
 	return GenericPlugin::redirectCreateDepthStencilSurface(Width, Height, Format, MultiSample, MultisampleQuality, Discard, ppSurface, pSharedHandle);
@@ -136,7 +136,7 @@ HRESULT GenericDepthPlugin::redirectClear(DWORD Count, CONST D3DRECT *pRects, DW
 	if((doAO && ssao) && (Flags == Settings::get().getZBufCompatibilityFlag() / 10 || Flags == Settings::get().getZBufCompatibilityFlag() % 10)) { // 2 flags possible
 		countClear++;
 		if(countClear > Settings::get().getZBufClearIndex()) {
-			SDLOG(6, "[GenericDepthPlugin] removing the D3DCLEAR_ZBUFFER flag from Flag %d - countClear %d\n", Flags, countClear);
+			SDLOG(6, "[GenericDepthPlugin] removing the D3DCLEAR_ZBUFFER flag from Flag {} - countClear {}\n", Flags, countClear);
 			if(Flags == 2) return D3D_OK; 
 			else if(Flags == 7) { // may not be pretty but makes RE4 works
 				Z = 0;
@@ -154,7 +154,7 @@ HRESULT GenericDepthPlugin::redirectSetDepthStencilSurface(IDirect3DSurface9* pN
 	if(doAO && pNewZStencil) {
 		D3DSURFACE_DESC dsDesc;
 		pNewZStencil->GetDesc(&dsDesc);
-		SDLOG(6, "[GenericDepthPlugin] pNewZStencil dimensions -> width: %d, height: %d\n", dsDesc.Width, dsDesc.Height);
+		SDLOG(6, "[GenericDepthPlugin] pNewZStencil dimensions -> width: {}, height: {}\n", dsDesc.Width, dsDesc.Height);
 
 		// Depth texture (re)created at a later stage to perfectly match the dimensions of the original game depthstencil which can be 16/9 even though the game is supposed
 		// to output to a 16/10 backbuffer. Hence the convoluted code below with aspectHeight and the likes (sorry)...
@@ -170,7 +170,7 @@ HRESULT GenericDepthPlugin::redirectSetDepthStencilSurface(IDirect3DSurface9* pN
 				((dsDesc.Width <= drw && dsDesc.Width > drw - augmentedWidth) && (dsDesc.Height <= aspectHeight && dsDesc.Height > aspectHeight - aspectHeight * widthTolerance))  || // for Binary Domain (1664x936) and some UE3 games
 				((dsDesc.Width >= drw && dsDesc.Width < drw + augmentedWidth) && (dsDesc.Height >= aspectHeight && dsDesc.Height < aspectHeight + aspectHeight * widthTolerance)) ) { // that add +6 pixel to th height (ie. 1680x1056)
 
-				SDLOG(6, "[GenericDepthPlugin] Found a good candidate for substitution -> width: %d, height: %d\n", dsDesc.Width, dsDesc.Height);
+				SDLOG(6, "[GenericDepthPlugin] Found a good candidate for substitution -> width: {}, height: {}\n", dsDesc.Width, dsDesc.Height);
 				texw = dsDesc.Width;
 				texh = dsDesc.Height;
 
@@ -185,13 +185,13 @@ HRESULT GenericDepthPlugin::redirectSetDepthStencilSurface(IDirect3DSurface9* pN
 
 					if(Settings::get().getEnableDoF()) {
 						SAFEDELETE(dof);
-						SDLOG(6, "[GenericDepthPlugin] DOF dimensions -> Backbuffer width: %d, Backbuffer height: %d, Depthwidth: %d, Depthheight: %d\n", drw, drh, drw, drh);
+						SDLOG(6, "[GenericDepthPlugin] DOF dimensions -> Backbuffer width: {}, Backbuffer height: {}, Depthwidth: {}, Depthheight: {}\n", drw, drh, drw, drh);
 						dof = new DOF(d3ddev, texw, texh, (Settings::get().getDOFType() == "bokeh") ? DOF::BOKEH : DOF::BASIC, Settings::get().getDOFBaseRadius(), true);
 					}
 
 					if(Settings::get().getSsaoStrength() > 0) {
 						SAFEDELETE(ssao);
-						SDLOG(6, "[GenericDepthPlugin] SSAO dimensions -> Backbuffer width: %d, Backbuffer height: %d, Depthwidth: %d, Depthheight: %d\n", drw, drh, texw, texh);
+						SDLOG(6, "[GenericDepthPlugin] SSAO dimensions -> Backbuffer width: {}, Backbuffer height: {}, Depthwidth: {}, Depthheight: {}\n", drw, drh, texw, texh);
 						ssao = new SSAO(d3ddev, drw, drh, texw, texh, Settings::get().getSsaoStrength() - 1, 
 										Settings::get().getSsaoType() == "VSSAO2" ? SSAO::VSSAO2 : 
 										Settings::get().getSsaoType() == "SAO" ? SSAO::SAO: Settings::get().getSsaoType() == "HBAO" ? SSAO::HBAO : SSAO::MSSAO,
@@ -206,11 +206,11 @@ HRESULT GenericDepthPlugin::redirectSetDepthStencilSurface(IDirect3DSurface9* pN
 		// DSS dimensions found in CreateDepthStencilSurface have the lowest priority as a criterion for substitution (as they can cause issues with rendering)
 		// We therefore first check if 'texw' is empty before using 'dssw' as a last resort
 		if(texw > 0 ? dsDesc.Width == texw && dsDesc.Height == texh : dsDesc.Width == dssw && dsDesc.Height == dssh) {
-			SDLOG(6, "[GenericDepthPlugin] substituting original DS surface (%4dx%4d) with our own (%4dx%4d)\n", dsDesc.Width, dsDesc.Height, texw > 0 ? texw : dssw, texh > 0 ? texh : dssh);
+			SDLOG(6, "[GenericDepthPlugin] substituting original DS surface ({:4}x{:4}) with our own ({:4}x{:4})\n", dsDesc.Width, dsDesc.Height, texw > 0 ? texw : dssw, texh > 0 ? texh : dssh);
 			hr = (texw > 0) ? GenericPlugin::redirectSetDepthStencilSurface(depthTextureAlt->getSurface()) : GenericPlugin::redirectSetDepthStencilSurface(depthTexture->getSurface());
 		}
 		else {
-			SDLOG(6, "[GenericDepthPlugin] original DS surface (%4dx%4d) doesn't match our own texture (%4dx%4d)\n", dsDesc.Width, dsDesc.Height, texw, texh);
+			SDLOG(6, "[GenericDepthPlugin] original DS surface ({:4}x{:4}) doesn't match our own texture ({:4}x{:4})\n", dsDesc.Width, dsDesc.Height, texw, texh);
 			hr = GenericPlugin::redirectSetDepthStencilSurface(pNewZStencil);
 		}
 	}

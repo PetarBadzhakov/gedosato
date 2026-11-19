@@ -19,17 +19,17 @@ DepthTexture::DepthTexture(const LPDIRECT3D9 d3d) {
 	// determine if RESZ is supported
 	m_isRESZ = d3d->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL,
 		currentDisplayMode.Format, D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE, FOURCC_RESZ) == D3D_OK;
-	SDLOG(-1, "[DepthTexture] RESZ: %s\n", m_isRESZ?"true":"false");
+	SDLOG(-1, "[DepthTexture] RESZ: {}\n", m_isRESZ?"true":"false");
 
 	// determine if INTZ is supported
 	m_isINTZ = d3d->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL,
 		currentDisplayMode.Format, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, FOURCC_INTZ) == D3D_OK;
-	SDLOG(-1, "[DepthTexture] INTZ: %s\n", m_isINTZ ? "true" : "false");
+	SDLOG(-1, "[DepthTexture] INTZ: {}\n", m_isINTZ ? "true" : "false");
 
 	// determine if RAWZ is supported, used in GeForce 6-7 series.
 	m_isRAWZ = d3d->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL,
 		currentDisplayMode.Format, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, FOURCC_RAWZ) == D3D_OK;
-	SDLOG(-1, "[DepthTexture] RAWZ: %s\n", m_isRAWZ ? "true" : "false");
+	SDLOG(-1, "[DepthTexture] RAWZ: {}\n", m_isRAWZ ? "true" : "false");
 
 	// determine if RESZ or NVAPI supported
 	m_isSupported = (NvAPI_Initialize() == NVAPI_OK || m_isRESZ) && (m_isRAWZ || m_isINTZ);

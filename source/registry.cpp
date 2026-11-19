@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <array>
-#include <boost/algorithm/string.hpp>
 
 string getRegString(const string& location, const string& name) {
 	static const unsigned CHARS = 2048;
@@ -25,7 +24,7 @@ bool getRegBool(const string& location, const string& name, const bool fallback)
 	string val = getRegString(location, name);
 	if(val.size() > 0) {
 		const std::array<const string,4> trueValues = { "on", "true", "enabled", "1" };
-		ret = std::any_of(trueValues.cbegin(), trueValues.cend(), [&val](const string& v){ return boost::algorithm::iequals(val, v); });
+		ret = std::any_of(trueValues.cbegin(), trueValues.cend(), [&val](const string& v){ return iequals(val, v); });
 	}
 	return ret;
 }

@@ -6,10 +6,9 @@
 #include "main.h"
 #include "settings.h"
 
-#include <boost/noncopyable.hpp>
 
 // Base class for effects
-class Effect : boost::noncopyable {
+class Effect {
 protected:
 	IDirect3DDevice9* device;
     IDirect3DVertexDeclaration9 *vertexDeclaration;
@@ -17,6 +16,9 @@ protected:
     static const D3DVERTEXELEMENT9 vertexElements[3];
 
 public:
+	Effect(const Effect&) = delete;
+	Effect& operator=(const Effect&) = delete;
+
 	Effect(IDirect3DDevice9* device) : device(device) {
 		device->CreateVertexDeclaration(vertexElements , &vertexDeclaration);
 	}

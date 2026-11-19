@@ -23,7 +23,7 @@ HRESULT DW8Plugin::redirectCreateTexture(UINT Width, UINT Height, UINT Levels, D
 	if(Pool != D3DPOOL_MANAGED && (Width == 1920 && Height == 1080)) {
 		Width = Settings::get().getRenderWidth();
 		Height = Settings::get().getRenderHeight();
-		SDLOG(4, " -> [DW8] scaling render texture to %dx%d\n", Width, Height);
+		SDLOG(4, " -> [DW8] scaling render texture to {}x{}\n", Width, Height);
 	}
 	return GenericPlugin::redirectCreateTexture(Width, Height, Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
 }
@@ -32,7 +32,7 @@ HRESULT DW8Plugin::redirectCreateRenderTarget(UINT Width, UINT Height, D3DFORMAT
 	if((Width == Settings::get().getPresentWidth() && Height == Settings::get().getPresentHeight()) || (Width == 1920 && Height == 1080)) {
 		Width = Settings::get().getRenderWidth();
 		Height = Settings::get().getRenderHeight();
-		SDLOG(4, " -> [DW8] scaling render target to %dx%d\n", Width, Height);
+		SDLOG(4, " -> [DW8] scaling render target to {}x{}\n", Width, Height);
 	}
 	return GenericPlugin::redirectCreateRenderTarget(Width, Height, Format, MultiSample, MultisampleQuality, Lockable, ppSurface, pSharedHandle);
 }
@@ -42,7 +42,7 @@ HRESULT DW8Plugin::redirectCreateDepthStencilSurface(UINT Width, UINT Height, D3
 	if((Width == Settings::get().getPresentWidth() && Height == Settings::get().getPresentHeight()) || (Width == 1920 && Height == 1080)) {
 		Width = Settings::get().getRenderWidth();
 		Height = Settings::get().getRenderHeight();
-		SDLOG(4, " -> [DW8] scaling dss to %dx%d\n", Width, Height);
+		SDLOG(4, " -> [DW8] scaling dss to {}x{}\n", Width, Height);
 	}
 	return GenericPlugin::redirectCreateDepthStencilSurface(Width, Height, Format, MultiSample, MultisampleQuality, Discard, ppSurface, pSharedHandle);
 }
@@ -69,7 +69,7 @@ HRESULT DW8Plugin::redirectScissorRect(CONST RECT* pRect) {
 		newRect.right = Settings::get().getRenderWidth();
 		newRect.top = 0;
 		newRect.bottom = Settings::get().getRenderHeight();
-		SDLOG(4, " -> [DW8] set scissor rect to %s\n", RectToString(&newRect));
+		SDLOG(4, " -> [DW8] set scissor rect to {}\n", RectToString(&newRect));
 		return GenericPlugin::redirectScissorRect(&newRect);
 	}
 	return GenericPlugin::redirectScissorRect(pRect);

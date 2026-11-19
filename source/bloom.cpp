@@ -32,7 +32,7 @@ Bloom::Bloom(IDirect3DDevice9 *device, int width, int height, float cutoff, floa
 		} else {
 			sWidth /= 2; sHeight /= 2;
 		}
-		SDLOG(2, "Generating bloom buffer %2u - %4dx%4d\n", i, sWidth, sHeight);
+		SDLOG(2, "Generating bloom buffer {:2} - {:4}x{:4}\n", i, sWidth, sHeight);
 		Size s = { sWidth, sHeight };
 		stepSizes.push_back(s);
 		for(unsigned j=0; j<2; ++j) {
@@ -54,13 +54,13 @@ void Bloom::reloadShader() {
 
 	// Load effect from file
 	string shaderFn = getAssetFileName("bloom.fx");
-	SDLOG(0, "%s load\n", shaderFn.c_str());
+	SDLOG(0, "{} load\n", shaderFn.c_str());
 	ID3DXBuffer* errors;
 	ID3DXEffect* newEffect = NULL;
 	HRESULT hr = D3DXCreateEffectFromFile(device, shaderFn.c_str(), &defines.front(), NULL, flags, NULL, &newEffect, &errors);
 	if(hr != D3D_OK) {
-		SDLOG(-1, "ERRORS:\n %s\n", (char*)errors->GetBufferPointer());
-		Console::get().add(format("Error compiling %s:", shaderFn.c_str()));
+		SDLOG(-1, "ERRORS:\n {}\n", (char*)errors->GetBufferPointer());
+		Console::get().add(strFormat("Error compiling {}:", shaderFn.c_str()));
 		Console::get().add(static_cast<const char*>(errors->GetBufferPointer()));
 	}
 	else {
@@ -70,7 +70,7 @@ void Bloom::reloadShader() {
 		// Get handles
 		#define GETHANDLE(__name) \
 			__name##Handle = effect->GetParameterByName(NULL, #__name); \
-			if(__name##Handle == NULL) SDLOG(-1, "ERROR loading handle %s in Bloom effect\n", #__name);
+			if(__name##Handle == NULL) SDLOG(-1, "ERROR loading handle {} in Bloom effect\n", #__name);
 		GETHANDLE(inputPixelMetrics)
 			GETHANDLE(invSteps);
 		GETHANDLE(sampleTex);
@@ -80,7 +80,7 @@ void Bloom::reloadShader() {
 		#undef GETHANDLE
 		#define GETHANDLE(__name) \
 			__name##Handle = effect->GetTechniqueByName(#__name); \
-			if(__name##Handle == NULL) SDLOG(-1, "ERROR loading technique handle %s in Bloom effect\n", #__name);
+			if(__name##Handle == NULL) SDLOG(-1, "ERROR loading technique handle {} in Bloom effect\n", #__name);
 		GETHANDLE(initialCutoffAndDownsample);
 		GETHANDLE(gaussian);
 		GETHANDLE(integrateUpwards);

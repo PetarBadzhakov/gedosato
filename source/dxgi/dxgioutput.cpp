@@ -58,15 +58,15 @@ HRESULT APIENTRY hkIDXGIOutput::GetDesc(DXGI_OUTPUT_DESC *pDesc) {
 
 HRESULT APIENTRY hkIDXGIOutput::GetDisplayModeList(DXGI_FORMAT EnumFormat, UINT Flags, UINT *pNumModes, DXGI_MODE_DESC *pDesc) {
 	SDLOG(20, "hkIDXGIOutput::GetDisplayModeList\n");
-	SDLOG(20, "   - EnumFormat: %s\n", DxgiFormatToString(EnumFormat));
-	SDLOG(20, "   - Flags: %u\n", Flags);
+	SDLOG(20, "   - EnumFormat: {}\n", DxgiFormatToString(EnumFormat));
+	SDLOG(20, "   - Flags: {}\n", Flags);
 	HRESULT hr = pWrapped->GetDisplayModeList(EnumFormat, Flags, pNumModes, pDesc);
 	if(SUCCEEDED(hr) && *pNumModes > 0) {
 		UINT totalModes = *pNumModes + static_cast<UINT>(Settings::getResSettings().getNumResolutions());
 		if(pDesc != NULL) {
 			for(unsigned i = *pNumModes, j = 0; i < totalModes; ++i, ++j) {
 				auto res = Settings::get().getResSettings().getResolution(j);
-				SDLOG(20, " -> GetDisplayModeList add mode #%u (%ux%u@%u)\n", i, res.width, res.height, res.hz);
+				SDLOG(20, " -> GetDisplayModeList add mode #{} ({}x{}@{})\n", i, res.width, res.height, res.hz);
 				pDesc[i].Format = EnumFormat;
 				pDesc[i].Width = res.width;
 				pDesc[i].Height = res.height;
@@ -75,7 +75,7 @@ HRESULT APIENTRY hkIDXGIOutput::GetDisplayModeList(DXGI_FORMAT EnumFormat, UINT 
 				pDesc[i].Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 			}
 		}
-		SDLOG(20, " -> GetDisplayModeList increase reported number of modes from %u to %u\n", *pNumModes, totalModes);
+		SDLOG(20, " -> GetDisplayModeList increase reported number of modes from {} to {}\n", *pNumModes, totalModes);
 		*pNumModes = totalModes;
 	}
 	return hr;

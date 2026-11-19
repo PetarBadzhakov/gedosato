@@ -17,8 +17,8 @@ IDirect3DTexture9* D3DGetSurfTexture(IDirect3DSurface9* pSurface) {
 
 // most of the enum-related functions in here are auto-generated
 
-TCHAR* D3DFormatToString(D3DFORMAT format, bool bWithPrefix) {
-    TCHAR* pstr = NULL;
+const char* D3DFormatToString(D3DFORMAT format, bool bWithPrefix) {
+    const char* pstr = NULL;
     switch(format) {
 		case D3DFMT_UNKNOWN: pstr = TEXT("D3DFMT_UNKNOWN"); break;
 		case D3DFMT_R8G8B8: pstr = TEXT("D3DFMT_R8G8B8"); break;
@@ -93,7 +93,7 @@ TCHAR* D3DFormatToString(D3DFORMAT format, bool bWithPrefix) {
         return pstr + lstrlen( TEXT("D3DFMT_") );
 }
 
-TCHAR* D3DSamplerStateTypeToString(D3DSAMPLERSTATETYPE state) {
+const char* D3DSamplerStateTypeToString(D3DSAMPLERSTATETYPE state) {
     switch(state) {
 		case D3DSAMP_ADDRESSU: return "D3DSAMP_ADDRESSU";
 		case D3DSAMP_ADDRESSV: return "D3DSAMP_ADDRESSV";
@@ -113,7 +113,7 @@ TCHAR* D3DSamplerStateTypeToString(D3DSAMPLERSTATETYPE state) {
 	return "Unknown Sampler State Type";
 }
 
-TCHAR* D3DDeclTypeToString(D3DDECLTYPE type) {
+const char* D3DDeclTypeToString(D3DDECLTYPE type) {
 	switch(type) {
 		case D3DDECLTYPE_FLOAT1: return "D3DDECLTYPE_FLOAT1";
 		case D3DDECLTYPE_FLOAT2: return "D3DDECLTYPE_FLOAT2";
@@ -137,7 +137,7 @@ TCHAR* D3DDeclTypeToString(D3DDECLTYPE type) {
 	return "Unknown D3D decl type";
 }
 
-TCHAR* D3DDeclUsageToString(D3DDECLUSAGE type) {
+const char* D3DDeclUsageToString(D3DDECLUSAGE type) {
 	switch(type) {
 		case D3DDECLUSAGE_POSITION: return "D3DDECLUSAGE_POSITION";
 		case D3DDECLUSAGE_BLENDWEIGHT: return "D3DDECLUSAGE_BLENDWEIGHT";
@@ -157,7 +157,7 @@ TCHAR* D3DDeclUsageToString(D3DDECLUSAGE type) {
 	return "Unknown D3D decl usage";
 }
 
-TCHAR* D3DDevTypeToString(D3DDEVTYPE type) {
+const char* D3DDevTypeToString(D3DDEVTYPE type) {
 	switch(type) {
 		case D3DDEVTYPE_HAL: return "D3DDEVTYPE_HAL";
 		case D3DDEVTYPE_REF: return "D3DDEVTYPE_REF";
@@ -166,7 +166,7 @@ TCHAR* D3DDevTypeToString(D3DDEVTYPE type) {
 	return "Unknown D3D dev type";
 }
 
-TCHAR* D3DResourceTypeToString(D3DRESOURCETYPE type) {
+const char* D3DResourceTypeToString(D3DRESOURCETYPE type) {
 	switch(type) {
 		case D3DRTYPE_SURFACE: return "D3DRTYPE_SURFACE";
 		case D3DRTYPE_VOLUME: return "D3DRTYPE_VOLUME";
@@ -179,7 +179,7 @@ TCHAR* D3DResourceTypeToString(D3DRESOURCETYPE type) {
 	return "Unknown D3D resource type";
 }
 
-TCHAR* D3DMultisampleTypeToString(D3DMULTISAMPLE_TYPE type) {
+const char* D3DMultisampleTypeToString(D3DMULTISAMPLE_TYPE type) {
 	switch(type) {
 	case D3DMULTISAMPLE_NONE: return "D3DMULTISAMPLE_NONE";
     case D3DMULTISAMPLE_NONMASKABLE: return "D3DMULTISAMPLE_NONMASKABLE";
@@ -202,7 +202,7 @@ TCHAR* D3DMultisampleTypeToString(D3DMULTISAMPLE_TYPE type) {
 	return "Unknown D3D multisample type";
 }
 
-TCHAR* D3DSwapEffectToString(D3DSWAPEFFECT swap) {
+const char* D3DSwapEffectToString(D3DSWAPEFFECT swap) {
 	switch(swap) {
 	case D3DSWAPEFFECT_DISCARD: return "D3DSWAPEFFECT_DISCARD";
     case D3DSWAPEFFECT_FLIP: return "D3DSWAPEFFECT_FLIP";
@@ -213,7 +213,7 @@ TCHAR* D3DSwapEffectToString(D3DSWAPEFFECT swap) {
 	return "Unknown swap effect";
 }
 
-TCHAR* D3DRenderStateTypeToString(D3DRENDERSTATETYPE s) {
+const char* D3DRenderStateTypeToString(D3DRENDERSTATETYPE s) {
 	switch(s) {
 	case D3DRS_ZENABLE: return "D3DRS_ZENABLE";    
     case D3DRS_FILLMODE: return "D3DRS_FILLMODE";    
@@ -322,7 +322,7 @@ TCHAR* D3DRenderStateTypeToString(D3DRENDERSTATETYPE s) {
 	return "Unknown render state";
 }
 
-TCHAR* D3DPoolToString(D3DPOOL pool) {
+const char* D3DPoolToString(D3DPOOL pool) {
 	switch(pool) {
 	case D3DPOOL_DEFAULT: return "D3DPOOL_DEFAULT";
 	case D3DPOOL_MANAGED: return "D3DPOOL_MANAGED";
@@ -332,7 +332,7 @@ TCHAR* D3DPoolToString(D3DPOOL pool) {
 	return "Unknown d3d pool";
 }
 
-TCHAR* D3DPrimitiveTypeToString(D3DPRIMITIVETYPE prim) {
+const char* D3DPrimitiveTypeToString(D3DPRIMITIVETYPE prim) {
 	switch(prim) {
 	case D3DPT_POINTLIST: return "D3DPT_POINTLIST";
 	case D3DPT_LINELIST: return "D3DPT_LINELIST";
@@ -351,7 +351,7 @@ string D3DMatrixToString(const D3DMATRIX* pMatrix) {
 	for(int i=0; i<4; ++i) {
 		ss << " | ";
 		for(int j=0; j<4; ++j) {
-			ss << format("%6.2f ", pMatrix->m[i][j]);
+			ss << strFormat("{:6.2f} ", pMatrix->m[i][j]);
 		}
 		ss << "\n";
 	}
@@ -372,114 +372,114 @@ string D3DPresentExFlagsToString(DWORD flags) {
 }
 
 string D3DSurfaceDescToString(const D3DSURFACE_DESC& desc) {
-	return format("%dx%d, format: %s, usage: %d, ms type: %s, ms qual: %d, mem pool: %s", desc.Width, desc.Height, D3DFormatToString(desc.Format), desc.Usage, 
+	return strFormat("{}x{}, format: {}, usage: {}, ms type: {}, ms qual: {}, mem pool: {}", desc.Width, desc.Height, D3DFormatToString(desc.Format), desc.Usage, 
 		D3DMultisampleTypeToString(desc.MultiSampleType), desc.MultiSampleQuality, D3DPoolToString(desc.Pool));
 }
 
 
 void logRenderState(IDirect3DDevice9* dev, int level) {
 	DWORD result = 0;
-	dev->GetRenderState(D3DRS_ZENABLE, &result); SDLOG(level, "D3DRS_ZENABLE: %d\n", result);
-	dev->GetRenderState(D3DRS_FILLMODE, &result); SDLOG(level, "D3DRS_FILLMODE: %d\n", result);
-	dev->GetRenderState(D3DRS_SHADEMODE, &result); SDLOG(level, "D3DRS_SHADEMODE: %d\n", result);
-	dev->GetRenderState(D3DRS_ZWRITEENABLE, &result); SDLOG(level, "D3DRS_ZWRITEENABLE: %d\n", result);
-	dev->GetRenderState(D3DRS_ALPHATESTENABLE, &result); SDLOG(level, "D3DRS_ALPHATESTENABLE: %d\n", result);
-	dev->GetRenderState(D3DRS_LASTPIXEL, &result); SDLOG(level, "D3DRS_LASTPIXEL: %d\n", result);
-	dev->GetRenderState(D3DRS_SRCBLEND, &result); SDLOG(level, "D3DRS_SRCBLEND: %d\n", result);
-	dev->GetRenderState(D3DRS_DESTBLEND, &result); SDLOG(level, "D3DRS_DESTBLEND: %d\n", result);
-	dev->GetRenderState(D3DRS_CULLMODE, &result); SDLOG(level, "D3DRS_CULLMODE: %d\n", result);
-	dev->GetRenderState(D3DRS_ZFUNC, &result); SDLOG(level, "D3DRS_ZFUNC: %d\n", result);
-	dev->GetRenderState(D3DRS_ALPHAREF, &result); SDLOG(level, "D3DRS_ALPHAREF: %d\n", result);
-	dev->GetRenderState(D3DRS_ALPHAFUNC, &result); SDLOG(level, "D3DRS_ALPHAFUNC: %d\n", result);
-	dev->GetRenderState(D3DRS_DITHERENABLE, &result); SDLOG(level, "D3DRS_DITHERENABLE: %d\n", result);
-	dev->GetRenderState(D3DRS_ALPHABLENDENABLE, &result); SDLOG(level, "D3DRS_ALPHABLENDENABLE: %d\n", result);
-	dev->GetRenderState(D3DRS_FOGENABLE, &result); SDLOG(level, "D3DRS_FOGENABLE: %d\n", result);
-	dev->GetRenderState(D3DRS_SPECULARENABLE, &result); SDLOG(level, "D3DRS_SPECULARENABLE: %d\n", result);
-	dev->GetRenderState(D3DRS_FOGCOLOR, &result); SDLOG(level, "D3DRS_FOGCOLOR: %d\n", result);
-	dev->GetRenderState(D3DRS_FOGTABLEMODE, &result); SDLOG(level, "D3DRS_FOGTABLEMODE: %d\n", result);
-	dev->GetRenderState(D3DRS_FOGSTART, &result); SDLOG(level, "D3DRS_FOGSTART: %d\n", result);
-	dev->GetRenderState(D3DRS_FOGEND, &result); SDLOG(level, "D3DRS_FOGEND: %d\n", result);
-	dev->GetRenderState(D3DRS_FOGDENSITY, &result); SDLOG(level, "D3DRS_FOGDENSITY: %d\n", result);
-	dev->GetRenderState(D3DRS_RANGEFOGENABLE, &result); SDLOG(level, "D3DRS_RANGEFOGENABLE: %d\n", result);
-	dev->GetRenderState(D3DRS_STENCILENABLE, &result); SDLOG(level, "D3DRS_STENCILENABLE: %d\n", result);
-	dev->GetRenderState(D3DRS_STENCILFAIL, &result); SDLOG(level, "D3DRS_STENCILFAIL: %d\n", result);
-	dev->GetRenderState(D3DRS_STENCILZFAIL, &result); SDLOG(level, "D3DRS_STENCILZFAIL: %d\n", result);
-	dev->GetRenderState(D3DRS_STENCILPASS, &result); SDLOG(level, "D3DRS_STENCILPASS: %d\n", result);
-	dev->GetRenderState(D3DRS_STENCILFUNC, &result); SDLOG(level, "D3DRS_STENCILFUNC: %d\n", result);
-	dev->GetRenderState(D3DRS_STENCILREF, &result); SDLOG(level, "D3DRS_STENCILREF: %d\n", result);
-	dev->GetRenderState(D3DRS_STENCILMASK, &result); SDLOG(level, "D3DRS_STENCILMASK: %d\n", result);
-	dev->GetRenderState(D3DRS_STENCILWRITEMASK, &result); SDLOG(level, "D3DRS_STENCILWRITEMASK: %d\n", result);
-	dev->GetRenderState(D3DRS_TEXTUREFACTOR, &result); SDLOG(level, "D3DRS_TEXTUREFACTOR: %d\n", result);
-	dev->GetRenderState(D3DRS_WRAP0, &result); SDLOG(level, "D3DRS_WRAP0: %d\n", result);
-	dev->GetRenderState(D3DRS_WRAP1, &result); SDLOG(level, "D3DRS_WRAP1: %d\n", result);
-	dev->GetRenderState(D3DRS_WRAP2, &result); SDLOG(level, "D3DRS_WRAP2: %d\n", result);
-	dev->GetRenderState(D3DRS_WRAP3, &result); SDLOG(level, "D3DRS_WRAP3: %d\n", result);
-	dev->GetRenderState(D3DRS_WRAP4, &result); SDLOG(level, "D3DRS_WRAP4: %d\n", result);
-	dev->GetRenderState(D3DRS_WRAP5, &result); SDLOG(level, "D3DRS_WRAP5: %d\n", result);
-	dev->GetRenderState(D3DRS_WRAP6, &result); SDLOG(level, "D3DRS_WRAP6: %d\n", result);
-	dev->GetRenderState(D3DRS_WRAP7, &result); SDLOG(level, "D3DRS_WRAP7: %d\n", result);
-	dev->GetRenderState(D3DRS_CLIPPING, &result); SDLOG(level, "D3DRS_CLIPPING: %d\n", result);
-	dev->GetRenderState(D3DRS_LIGHTING, &result); SDLOG(level, "D3DRS_LIGHTING: %d\n", result);
-	dev->GetRenderState(D3DRS_AMBIENT, &result); SDLOG(level, "D3DRS_AMBIENT: %d\n", result);
-	dev->GetRenderState(D3DRS_FOGVERTEXMODE, &result); SDLOG(level, "D3DRS_FOGVERTEXMODE: %d\n", result);
-	dev->GetRenderState(D3DRS_COLORVERTEX, &result); SDLOG(level, "D3DRS_COLORVERTEX: %d\n", result);
-	dev->GetRenderState(D3DRS_LOCALVIEWER, &result); SDLOG(level, "D3DRS_LOCALVIEWER: %d\n", result);
-	dev->GetRenderState(D3DRS_NORMALIZENORMALS, &result); SDLOG(level, "D3DRS_NORMALIZENORMALS: %d\n", result);
-	dev->GetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, &result); SDLOG(level, "D3DRS_DIFFUSEMATERIALSOURCE: %d\n", result);
-	dev->GetRenderState(D3DRS_SPECULARMATERIALSOURCE, &result); SDLOG(level, "D3DRS_SPECULARMATERIALSOURCE: %d\n", result);
-	dev->GetRenderState(D3DRS_AMBIENTMATERIALSOURCE, &result); SDLOG(level, "D3DRS_AMBIENTMATERIALSOURCE: %d\n", result);
-	dev->GetRenderState(D3DRS_EMISSIVEMATERIALSOURCE, &result); SDLOG(level, "D3DRS_EMISSIVEMATERIALSOURCE: %d\n", result);
-	dev->GetRenderState(D3DRS_VERTEXBLEND, &result); SDLOG(level, "D3DRS_VERTEXBLEND: %d\n", result);
-	dev->GetRenderState(D3DRS_CLIPPLANEENABLE, &result); SDLOG(level, "D3DRS_CLIPPLANEENABLE: %d\n", result);
-	dev->GetRenderState(D3DRS_POINTSIZE, &result); SDLOG(level, "D3DRS_POINTSIZE: %d\n", result);
-	dev->GetRenderState(D3DRS_POINTSIZE_MIN, &result); SDLOG(level, "D3DRS_POINTSIZE_MIN: %d\n", result);
-	dev->GetRenderState(D3DRS_POINTSPRITEENABLE, &result); SDLOG(level, "D3DRS_POINTSPRITEENABLE: %d\n", result);
-	dev->GetRenderState(D3DRS_POINTSCALEENABLE, &result); SDLOG(level, "D3DRS_POINTSCALEENABLE: %d\n", result);
-	dev->GetRenderState(D3DRS_POINTSCALE_A, &result); SDLOG(level, "D3DRS_POINTSCALE_A: %d\n", result);
-	dev->GetRenderState(D3DRS_POINTSCALE_B, &result); SDLOG(level, "D3DRS_POINTSCALE_B: %d\n", result);
-	dev->GetRenderState(D3DRS_POINTSCALE_C, &result); SDLOG(level, "D3DRS_POINTSCALE_C: %d\n", result);
-	dev->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &result); SDLOG(level, "D3DRS_MULTISAMPLEANTIALIAS: %d\n", result);
-	dev->GetRenderState(D3DRS_MULTISAMPLEMASK, &result); SDLOG(level, "D3DRS_MULTISAMPLEMASK: %d\n", result);
-	dev->GetRenderState(D3DRS_PATCHEDGESTYLE, &result); SDLOG(level, "D3DRS_PATCHEDGESTYLE: %d\n", result);
-	dev->GetRenderState(D3DRS_DEBUGMONITORTOKEN, &result); SDLOG(level, "D3DRS_DEBUGMONITORTOKEN: %d\n", result);
-	dev->GetRenderState(D3DRS_POINTSIZE_MAX, &result); SDLOG(level, "D3DRS_POINTSIZE_MAX: %d\n", result);
-	dev->GetRenderState(D3DRS_INDEXEDVERTEXBLENDENABLE, &result); SDLOG(level, "D3DRS_INDEXEDVERTEXBLENDENABLE: %d\n", result);
-	dev->GetRenderState(D3DRS_COLORWRITEENABLE, &result); SDLOG(level, "D3DRS_COLORWRITEENABLE: %d\n", result);
-	dev->GetRenderState(D3DRS_TWEENFACTOR, &result); SDLOG(level, "D3DRS_TWEENFACTOR: %d\n", result);
-	dev->GetRenderState(D3DRS_BLENDOP, &result); SDLOG(level, "D3DRS_BLENDOP: %d\n", result);
-	dev->GetRenderState(D3DRS_POSITIONDEGREE, &result); SDLOG(level, "D3DRS_POSITIONDEGREE: %d\n", result);
-	dev->GetRenderState(D3DRS_NORMALDEGREE, &result); SDLOG(level, "D3DRS_NORMALDEGREE: %d\n", result);
-	dev->GetRenderState(D3DRS_SCISSORTESTENABLE, &result); SDLOG(level, "D3DRS_SCISSORTESTENABLE: %d\n", result);
-	dev->GetRenderState(D3DRS_SLOPESCALEDEPTHBIAS, &result); SDLOG(level, "D3DRS_SLOPESCALEDEPTHBIAS: %d\n", result);
-	dev->GetRenderState(D3DRS_ANTIALIASEDLINEENABLE, &result); SDLOG(level, "D3DRS_ANTIALIASEDLINEENABLE: %d\n", result);
-	dev->GetRenderState(D3DRS_MINTESSELLATIONLEVEL, &result); SDLOG(level, "D3DRS_MINTESSELLATIONLEVEL: %d\n", result);
-	dev->GetRenderState(D3DRS_MAXTESSELLATIONLEVEL, &result); SDLOG(level, "D3DRS_MAXTESSELLATIONLEVEL: %d\n", result);
-	dev->GetRenderState(D3DRS_ADAPTIVETESS_X, &result); SDLOG(level, "D3DRS_ADAPTIVETESS_X: %d\n", result);
-	dev->GetRenderState(D3DRS_ADAPTIVETESS_Y, &result); SDLOG(level, "D3DRS_ADAPTIVETESS_Y: %d\n", result);
-	dev->GetRenderState(D3DRS_ADAPTIVETESS_Z, &result); SDLOG(level, "D3DRS_ADAPTIVETESS_Z: %d\n", result);
-	dev->GetRenderState(D3DRS_ADAPTIVETESS_W, &result); SDLOG(level, "D3DRS_ADAPTIVETESS_W: %d\n", result);
-	dev->GetRenderState(D3DRS_ENABLEADAPTIVETESSELLATION, &result); SDLOG(level, "D3DRS_ENABLEADAPTIVETESSELLATION: %d\n", result);
-	dev->GetRenderState(D3DRS_TWOSIDEDSTENCILMODE, &result); SDLOG(level, "D3DRS_TWOSIDEDSTENCILMODE: %d\n", result);
-	dev->GetRenderState(D3DRS_CCW_STENCILFAIL, &result); SDLOG(level, "D3DRS_CCW_STENCILFAIL: %d\n", result);
-	dev->GetRenderState(D3DRS_CCW_STENCILZFAIL, &result); SDLOG(level, "D3DRS_CCW_STENCILZFAIL: %d\n", result);
-	dev->GetRenderState(D3DRS_CCW_STENCILPASS, &result); SDLOG(level, "D3DRS_CCW_STENCILPASS: %d\n", result);
-	dev->GetRenderState(D3DRS_CCW_STENCILFUNC, &result); SDLOG(level, "D3DRS_CCW_STENCILFUNC: %d\n", result);
-	dev->GetRenderState(D3DRS_COLORWRITEENABLE1, &result); SDLOG(level, "D3DRS_COLORWRITEENABLE1: %d\n", result);
-	dev->GetRenderState(D3DRS_COLORWRITEENABLE2, &result); SDLOG(level, "D3DRS_COLORWRITEENABLE2: %d\n", result);
-	dev->GetRenderState(D3DRS_COLORWRITEENABLE3, &result); SDLOG(level, "D3DRS_COLORWRITEENABLE3: %d\n", result);
-	dev->GetRenderState(D3DRS_BLENDFACTOR, &result); SDLOG(level, "D3DRS_BLENDFACTOR: %d\n", result);
-	dev->GetRenderState(D3DRS_SRGBWRITEENABLE, &result); SDLOG(level, "D3DRS_SRGBWRITEENABLE: %d\n", result);
-	dev->GetRenderState(D3DRS_DEPTHBIAS, &result); SDLOG(level, "D3DRS_DEPTHBIAS: %d\n", result);
-	dev->GetRenderState(D3DRS_WRAP8, &result); SDLOG(level, "D3DRS_WRAP8: %d\n", result);
-	dev->GetRenderState(D3DRS_WRAP9, &result); SDLOG(level, "D3DRS_WRAP9: %d\n", result);
-	dev->GetRenderState(D3DRS_WRAP10, &result); SDLOG(level, "D3DRS_WRAP10: %d\n", result);
-	dev->GetRenderState(D3DRS_WRAP11, &result); SDLOG(level, "D3DRS_WRAP11: %d\n", result);
-	dev->GetRenderState(D3DRS_WRAP12, &result); SDLOG(level, "D3DRS_WRAP12: %d\n", result);
-	dev->GetRenderState(D3DRS_WRAP13, &result); SDLOG(level, "D3DRS_WRAP13: %d\n", result);
-	dev->GetRenderState(D3DRS_WRAP14, &result); SDLOG(level, "D3DRS_WRAP14: %d\n", result);
-	dev->GetRenderState(D3DRS_WRAP15, &result); SDLOG(level, "D3DRS_WRAP15: %d\n", result);
-	dev->GetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, &result); SDLOG(level, "D3DRS_SEPARATEALPHABLENDENABLE: %d\n", result);
-	dev->GetRenderState(D3DRS_SRCBLENDALPHA, &result); SDLOG(level, "D3DRS_SRCBLENDALPHA: %d\n", result);
-	dev->GetRenderState(D3DRS_DESTBLENDALPHA, &result); SDLOG(level, "D3DRS_DESTBLENDALPHA: %d\n", result);
-	dev->GetRenderState(D3DRS_BLENDOPALPHA, &result); SDLOG(level, "D3DRS_BLENDOPALPHA: %d\n", result);
+	dev->GetRenderState(D3DRS_ZENABLE, &result); SDLOG(level, "D3DRS_ZENABLE: {}\n", result);
+	dev->GetRenderState(D3DRS_FILLMODE, &result); SDLOG(level, "D3DRS_FILLMODE: {}\n", result);
+	dev->GetRenderState(D3DRS_SHADEMODE, &result); SDLOG(level, "D3DRS_SHADEMODE: {}\n", result);
+	dev->GetRenderState(D3DRS_ZWRITEENABLE, &result); SDLOG(level, "D3DRS_ZWRITEENABLE: {}\n", result);
+	dev->GetRenderState(D3DRS_ALPHATESTENABLE, &result); SDLOG(level, "D3DRS_ALPHATESTENABLE: {}\n", result);
+	dev->GetRenderState(D3DRS_LASTPIXEL, &result); SDLOG(level, "D3DRS_LASTPIXEL: {}\n", result);
+	dev->GetRenderState(D3DRS_SRCBLEND, &result); SDLOG(level, "D3DRS_SRCBLEND: {}\n", result);
+	dev->GetRenderState(D3DRS_DESTBLEND, &result); SDLOG(level, "D3DRS_DESTBLEND: {}\n", result);
+	dev->GetRenderState(D3DRS_CULLMODE, &result); SDLOG(level, "D3DRS_CULLMODE: {}\n", result);
+	dev->GetRenderState(D3DRS_ZFUNC, &result); SDLOG(level, "D3DRS_ZFUNC: {}\n", result);
+	dev->GetRenderState(D3DRS_ALPHAREF, &result); SDLOG(level, "D3DRS_ALPHAREF: {}\n", result);
+	dev->GetRenderState(D3DRS_ALPHAFUNC, &result); SDLOG(level, "D3DRS_ALPHAFUNC: {}\n", result);
+	dev->GetRenderState(D3DRS_DITHERENABLE, &result); SDLOG(level, "D3DRS_DITHERENABLE: {}\n", result);
+	dev->GetRenderState(D3DRS_ALPHABLENDENABLE, &result); SDLOG(level, "D3DRS_ALPHABLENDENABLE: {}\n", result);
+	dev->GetRenderState(D3DRS_FOGENABLE, &result); SDLOG(level, "D3DRS_FOGENABLE: {}\n", result);
+	dev->GetRenderState(D3DRS_SPECULARENABLE, &result); SDLOG(level, "D3DRS_SPECULARENABLE: {}\n", result);
+	dev->GetRenderState(D3DRS_FOGCOLOR, &result); SDLOG(level, "D3DRS_FOGCOLOR: {}\n", result);
+	dev->GetRenderState(D3DRS_FOGTABLEMODE, &result); SDLOG(level, "D3DRS_FOGTABLEMODE: {}\n", result);
+	dev->GetRenderState(D3DRS_FOGSTART, &result); SDLOG(level, "D3DRS_FOGSTART: {}\n", result);
+	dev->GetRenderState(D3DRS_FOGEND, &result); SDLOG(level, "D3DRS_FOGEND: {}\n", result);
+	dev->GetRenderState(D3DRS_FOGDENSITY, &result); SDLOG(level, "D3DRS_FOGDENSITY: {}\n", result);
+	dev->GetRenderState(D3DRS_RANGEFOGENABLE, &result); SDLOG(level, "D3DRS_RANGEFOGENABLE: {}\n", result);
+	dev->GetRenderState(D3DRS_STENCILENABLE, &result); SDLOG(level, "D3DRS_STENCILENABLE: {}\n", result);
+	dev->GetRenderState(D3DRS_STENCILFAIL, &result); SDLOG(level, "D3DRS_STENCILFAIL: {}\n", result);
+	dev->GetRenderState(D3DRS_STENCILZFAIL, &result); SDLOG(level, "D3DRS_STENCILZFAIL: {}\n", result);
+	dev->GetRenderState(D3DRS_STENCILPASS, &result); SDLOG(level, "D3DRS_STENCILPASS: {}\n", result);
+	dev->GetRenderState(D3DRS_STENCILFUNC, &result); SDLOG(level, "D3DRS_STENCILFUNC: {}\n", result);
+	dev->GetRenderState(D3DRS_STENCILREF, &result); SDLOG(level, "D3DRS_STENCILREF: {}\n", result);
+	dev->GetRenderState(D3DRS_STENCILMASK, &result); SDLOG(level, "D3DRS_STENCILMASK: {}\n", result);
+	dev->GetRenderState(D3DRS_STENCILWRITEMASK, &result); SDLOG(level, "D3DRS_STENCILWRITEMASK: {}\n", result);
+	dev->GetRenderState(D3DRS_TEXTUREFACTOR, &result); SDLOG(level, "D3DRS_TEXTUREFACTOR: {}\n", result);
+	dev->GetRenderState(D3DRS_WRAP0, &result); SDLOG(level, "D3DRS_WRAP0: {}\n", result);
+	dev->GetRenderState(D3DRS_WRAP1, &result); SDLOG(level, "D3DRS_WRAP1: {}\n", result);
+	dev->GetRenderState(D3DRS_WRAP2, &result); SDLOG(level, "D3DRS_WRAP2: {}\n", result);
+	dev->GetRenderState(D3DRS_WRAP3, &result); SDLOG(level, "D3DRS_WRAP3: {}\n", result);
+	dev->GetRenderState(D3DRS_WRAP4, &result); SDLOG(level, "D3DRS_WRAP4: {}\n", result);
+	dev->GetRenderState(D3DRS_WRAP5, &result); SDLOG(level, "D3DRS_WRAP5: {}\n", result);
+	dev->GetRenderState(D3DRS_WRAP6, &result); SDLOG(level, "D3DRS_WRAP6: {}\n", result);
+	dev->GetRenderState(D3DRS_WRAP7, &result); SDLOG(level, "D3DRS_WRAP7: {}\n", result);
+	dev->GetRenderState(D3DRS_CLIPPING, &result); SDLOG(level, "D3DRS_CLIPPING: {}\n", result);
+	dev->GetRenderState(D3DRS_LIGHTING, &result); SDLOG(level, "D3DRS_LIGHTING: {}\n", result);
+	dev->GetRenderState(D3DRS_AMBIENT, &result); SDLOG(level, "D3DRS_AMBIENT: {}\n", result);
+	dev->GetRenderState(D3DRS_FOGVERTEXMODE, &result); SDLOG(level, "D3DRS_FOGVERTEXMODE: {}\n", result);
+	dev->GetRenderState(D3DRS_COLORVERTEX, &result); SDLOG(level, "D3DRS_COLORVERTEX: {}\n", result);
+	dev->GetRenderState(D3DRS_LOCALVIEWER, &result); SDLOG(level, "D3DRS_LOCALVIEWER: {}\n", result);
+	dev->GetRenderState(D3DRS_NORMALIZENORMALS, &result); SDLOG(level, "D3DRS_NORMALIZENORMALS: {}\n", result);
+	dev->GetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, &result); SDLOG(level, "D3DRS_DIFFUSEMATERIALSOURCE: {}\n", result);
+	dev->GetRenderState(D3DRS_SPECULARMATERIALSOURCE, &result); SDLOG(level, "D3DRS_SPECULARMATERIALSOURCE: {}\n", result);
+	dev->GetRenderState(D3DRS_AMBIENTMATERIALSOURCE, &result); SDLOG(level, "D3DRS_AMBIENTMATERIALSOURCE: {}\n", result);
+	dev->GetRenderState(D3DRS_EMISSIVEMATERIALSOURCE, &result); SDLOG(level, "D3DRS_EMISSIVEMATERIALSOURCE: {}\n", result);
+	dev->GetRenderState(D3DRS_VERTEXBLEND, &result); SDLOG(level, "D3DRS_VERTEXBLEND: {}\n", result);
+	dev->GetRenderState(D3DRS_CLIPPLANEENABLE, &result); SDLOG(level, "D3DRS_CLIPPLANEENABLE: {}\n", result);
+	dev->GetRenderState(D3DRS_POINTSIZE, &result); SDLOG(level, "D3DRS_POINTSIZE: {}\n", result);
+	dev->GetRenderState(D3DRS_POINTSIZE_MIN, &result); SDLOG(level, "D3DRS_POINTSIZE_MIN: {}\n", result);
+	dev->GetRenderState(D3DRS_POINTSPRITEENABLE, &result); SDLOG(level, "D3DRS_POINTSPRITEENABLE: {}\n", result);
+	dev->GetRenderState(D3DRS_POINTSCALEENABLE, &result); SDLOG(level, "D3DRS_POINTSCALEENABLE: {}\n", result);
+	dev->GetRenderState(D3DRS_POINTSCALE_A, &result); SDLOG(level, "D3DRS_POINTSCALE_A: {}\n", result);
+	dev->GetRenderState(D3DRS_POINTSCALE_B, &result); SDLOG(level, "D3DRS_POINTSCALE_B: {}\n", result);
+	dev->GetRenderState(D3DRS_POINTSCALE_C, &result); SDLOG(level, "D3DRS_POINTSCALE_C: {}\n", result);
+	dev->GetRenderState(D3DRS_MULTISAMPLEANTIALIAS, &result); SDLOG(level, "D3DRS_MULTISAMPLEANTIALIAS: {}\n", result);
+	dev->GetRenderState(D3DRS_MULTISAMPLEMASK, &result); SDLOG(level, "D3DRS_MULTISAMPLEMASK: {}\n", result);
+	dev->GetRenderState(D3DRS_PATCHEDGESTYLE, &result); SDLOG(level, "D3DRS_PATCHEDGESTYLE: {}\n", result);
+	dev->GetRenderState(D3DRS_DEBUGMONITORTOKEN, &result); SDLOG(level, "D3DRS_DEBUGMONITORTOKEN: {}\n", result);
+	dev->GetRenderState(D3DRS_POINTSIZE_MAX, &result); SDLOG(level, "D3DRS_POINTSIZE_MAX: {}\n", result);
+	dev->GetRenderState(D3DRS_INDEXEDVERTEXBLENDENABLE, &result); SDLOG(level, "D3DRS_INDEXEDVERTEXBLENDENABLE: {}\n", result);
+	dev->GetRenderState(D3DRS_COLORWRITEENABLE, &result); SDLOG(level, "D3DRS_COLORWRITEENABLE: {}\n", result);
+	dev->GetRenderState(D3DRS_TWEENFACTOR, &result); SDLOG(level, "D3DRS_TWEENFACTOR: {}\n", result);
+	dev->GetRenderState(D3DRS_BLENDOP, &result); SDLOG(level, "D3DRS_BLENDOP: {}\n", result);
+	dev->GetRenderState(D3DRS_POSITIONDEGREE, &result); SDLOG(level, "D3DRS_POSITIONDEGREE: {}\n", result);
+	dev->GetRenderState(D3DRS_NORMALDEGREE, &result); SDLOG(level, "D3DRS_NORMALDEGREE: {}\n", result);
+	dev->GetRenderState(D3DRS_SCISSORTESTENABLE, &result); SDLOG(level, "D3DRS_SCISSORTESTENABLE: {}\n", result);
+	dev->GetRenderState(D3DRS_SLOPESCALEDEPTHBIAS, &result); SDLOG(level, "D3DRS_SLOPESCALEDEPTHBIAS: {}\n", result);
+	dev->GetRenderState(D3DRS_ANTIALIASEDLINEENABLE, &result); SDLOG(level, "D3DRS_ANTIALIASEDLINEENABLE: {}\n", result);
+	dev->GetRenderState(D3DRS_MINTESSELLATIONLEVEL, &result); SDLOG(level, "D3DRS_MINTESSELLATIONLEVEL: {}\n", result);
+	dev->GetRenderState(D3DRS_MAXTESSELLATIONLEVEL, &result); SDLOG(level, "D3DRS_MAXTESSELLATIONLEVEL: {}\n", result);
+	dev->GetRenderState(D3DRS_ADAPTIVETESS_X, &result); SDLOG(level, "D3DRS_ADAPTIVETESS_X: {}\n", result);
+	dev->GetRenderState(D3DRS_ADAPTIVETESS_Y, &result); SDLOG(level, "D3DRS_ADAPTIVETESS_Y: {}\n", result);
+	dev->GetRenderState(D3DRS_ADAPTIVETESS_Z, &result); SDLOG(level, "D3DRS_ADAPTIVETESS_Z: {}\n", result);
+	dev->GetRenderState(D3DRS_ADAPTIVETESS_W, &result); SDLOG(level, "D3DRS_ADAPTIVETESS_W: {}\n", result);
+	dev->GetRenderState(D3DRS_ENABLEADAPTIVETESSELLATION, &result); SDLOG(level, "D3DRS_ENABLEADAPTIVETESSELLATION: {}\n", result);
+	dev->GetRenderState(D3DRS_TWOSIDEDSTENCILMODE, &result); SDLOG(level, "D3DRS_TWOSIDEDSTENCILMODE: {}\n", result);
+	dev->GetRenderState(D3DRS_CCW_STENCILFAIL, &result); SDLOG(level, "D3DRS_CCW_STENCILFAIL: {}\n", result);
+	dev->GetRenderState(D3DRS_CCW_STENCILZFAIL, &result); SDLOG(level, "D3DRS_CCW_STENCILZFAIL: {}\n", result);
+	dev->GetRenderState(D3DRS_CCW_STENCILPASS, &result); SDLOG(level, "D3DRS_CCW_STENCILPASS: {}\n", result);
+	dev->GetRenderState(D3DRS_CCW_STENCILFUNC, &result); SDLOG(level, "D3DRS_CCW_STENCILFUNC: {}\n", result);
+	dev->GetRenderState(D3DRS_COLORWRITEENABLE1, &result); SDLOG(level, "D3DRS_COLORWRITEENABLE1: {}\n", result);
+	dev->GetRenderState(D3DRS_COLORWRITEENABLE2, &result); SDLOG(level, "D3DRS_COLORWRITEENABLE2: {}\n", result);
+	dev->GetRenderState(D3DRS_COLORWRITEENABLE3, &result); SDLOG(level, "D3DRS_COLORWRITEENABLE3: {}\n", result);
+	dev->GetRenderState(D3DRS_BLENDFACTOR, &result); SDLOG(level, "D3DRS_BLENDFACTOR: {}\n", result);
+	dev->GetRenderState(D3DRS_SRGBWRITEENABLE, &result); SDLOG(level, "D3DRS_SRGBWRITEENABLE: {}\n", result);
+	dev->GetRenderState(D3DRS_DEPTHBIAS, &result); SDLOG(level, "D3DRS_DEPTHBIAS: {}\n", result);
+	dev->GetRenderState(D3DRS_WRAP8, &result); SDLOG(level, "D3DRS_WRAP8: {}\n", result);
+	dev->GetRenderState(D3DRS_WRAP9, &result); SDLOG(level, "D3DRS_WRAP9: {}\n", result);
+	dev->GetRenderState(D3DRS_WRAP10, &result); SDLOG(level, "D3DRS_WRAP10: {}\n", result);
+	dev->GetRenderState(D3DRS_WRAP11, &result); SDLOG(level, "D3DRS_WRAP11: {}\n", result);
+	dev->GetRenderState(D3DRS_WRAP12, &result); SDLOG(level, "D3DRS_WRAP12: {}\n", result);
+	dev->GetRenderState(D3DRS_WRAP13, &result); SDLOG(level, "D3DRS_WRAP13: {}\n", result);
+	dev->GetRenderState(D3DRS_WRAP14, &result); SDLOG(level, "D3DRS_WRAP14: {}\n", result);
+	dev->GetRenderState(D3DRS_WRAP15, &result); SDLOG(level, "D3DRS_WRAP15: {}\n", result);
+	dev->GetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, &result); SDLOG(level, "D3DRS_SEPARATEALPHABLENDENABLE: {}\n", result);
+	dev->GetRenderState(D3DRS_SRCBLENDALPHA, &result); SDLOG(level, "D3DRS_SRCBLENDALPHA: {}\n", result);
+	dev->GetRenderState(D3DRS_DESTBLENDALPHA, &result); SDLOG(level, "D3DRS_DESTBLENDALPHA: {}\n", result);
+	dev->GetRenderState(D3DRS_BLENDOPALPHA, &result); SDLOG(level, "D3DRS_BLENDOPALPHA: {}\n", result);
 }

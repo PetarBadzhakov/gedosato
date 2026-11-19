@@ -1,19 +1,13 @@
-*.sdf
+# Build output and restored packages
+build/
+packages/
 *.user
-*.suo
-*.opensdf
-Release
-Debug
-*.dll
-*.zip
+.vs/
+
+# Local working files (notes, scripts, test builds): never committed
+.work/
+
+# GeDoSaTo runtime output in the pack folder
 *.log
-*.exe
-*.vcd
-*.opendb
-stuff
-*SyncToy*
-*.lnk
 *_user.ini
 *_user.txt
-!GeDoSaTo.dll
-!GeDoSaToTool.exe

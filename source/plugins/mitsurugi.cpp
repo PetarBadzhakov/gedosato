@@ -110,7 +110,7 @@ HRESULT MitsurugiPlugin::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,
 				SDLOG(2, "[mitsuuuu]\n");
 				for(int i = 0; i < 4; ++i) {
 					for(int j = 0; j < 5; ++j) {
-						SDLOG(2, "%12.4f", floats[i * 5 + j]);
+						SDLOG(2, "{:12.4f}", floats[i * 5 + j]);
 					}
 					SDLOG(2,"\n");
 				}

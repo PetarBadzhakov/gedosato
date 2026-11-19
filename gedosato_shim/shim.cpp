@@ -15,7 +15,9 @@
 // 2.3) if there's a match, load the actual gedosato.dll
 // 2.4) FreeLibraryAndExitThread
 
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
 
 #if 0
@@ -143,18 +145,19 @@ bool checkWhitelist(LPCTSTR directory, LPCTSTR fileName, LPCTSTR exeFileName) {
 	BAIL_ON(gotFileSize == FALSE, SHIM_PREFIX L"could not determine whitelist size\r\n");
 	DBG(SHIM_PREFIX L"opened whitelist.\r\n");
 
-	// read file and close
-	LPVOID buffer = HeapAlloc(GetProcessHeap(), 0, (DWORD)whitelistSize.QuadPart+1);
+	// read file and close (32-bit size: no 64-bit arithmetic, which would need the CRT on x86)
+	const DWORD size = static_cast<DWORD>(whitelistSize.QuadPart);
+	LPVOID buffer = HeapAlloc(GetProcessHeap(), 0, size + 1);
 	BAIL_ON(buffer == NULL, SHIM_PREFIX L"could not allocate buffer to load whitelist\r\n");
-	DWORD bytesRead;
-	BOOL readFile = ReadFile(file, buffer, (DWORD)whitelistSize.QuadPart, &bytesRead, NULL);
+	DWORD bytesRead = 0;
+	BOOL readFile = ReadFile(file, buffer, size, &bytesRead, NULL);
 	BAIL_ON(readFile == FALSE, SHIM_PREFIX L"failed to read whitelist file\r\n");
 	CloseHandle(file);
 	DBG(SHIM_PREFIX L"read whitelist.\r\n");
 
 	// process buffer
 	char* whitelistBuffer = (char*)buffer;
-	whitelistBuffer[whitelistSize.QuadPart] = '\0';
+	whitelistBuffer[bytesRead] = '\0';
 	bool ret = checkWhitelistEntries(whitelistBuffer, exeFileName);
 	DBG(SHIM_PREFIX L"processed whitelist.\r\n");
 
@@ -199,9 +202,9 @@ bool hookIfRequired(HMODULE hModule) {
 		DBG(SHIM_PREFIX L"loading main dll:\r\n"); DBG(mainDllPath);
 		// perform actual hooking
 		HMODULE mainDllModule = LoadLibrary(mainDllPath);
-		BAIL_ON(mainDllModule <= 0, SHIM_PREFIX L"could not load main GeDoSaTo dll\r\n");
+		BAIL_ON(mainDllModule == NULL, SHIM_PREFIX L"could not load main GeDoSaTo dll\r\n");
 		gedosatoInitFuncType initFunc = (gedosatoInitFuncType)GetProcAddress(mainDllModule, GEDO_INIT_FUN_NAME);
-		BAIL_ON(mainDllModule <= 0, SHIM_PREFIX L"could not resolve initialization procedure address\r\n");
+		BAIL_ON(initFunc == NULL, SHIM_PREFIX L"could not resolve initialization procedure address\r\n");
 		initFunc();
 		DBG(SHIM_PREFIX L"done.\r\n");
 		return true;

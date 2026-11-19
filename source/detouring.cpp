@@ -25,9 +25,9 @@
 #include "dxgi/dxgifactory1.h"
 #include "dxgi/dxgifactory2.h"
 
+#ifdef GEDOSATO_STEAM_HOOK
 #include "steam/steamfriends.h"
-
-#include <gl/GL.h>
+#endif
 
 #define GENERATE_INTERCEPT_HEADER(__name, __rettype, __convention, ...) \
 typedef __rettype (__convention * __name##_FNType)(__VA_ARGS__); \
@@ -38,14 +38,12 @@ __rettype __convention Detoured##__name(__VA_ARGS__)
 // LoadLibrary /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace {
-	void restartDetour(LPCSTR fn) {
+	// Hook newly loaded DLLs once per file name.
+	void restartDetour(const string& fileName) {
+		static std::mutex mutex;
 		static std::set<string> loaded;
-		string fns(fn);
-		boost::algorithm::to_lower(fns);
-		if(loaded.count(fns) == 0) {
-			loaded.insert(fns);
-			startDetour();
-		}
+		std::lock_guard<std::mutex> lock(mutex);
+		if(loaded.insert(toLower(fileName)).second) startDetour();
 	}
 
 	HMODULE GetCurrentModule() {
@@ -57,94 +55,91 @@ namespace {
 		return hModule;
 	}
 
-	template<typename strtype>
-	bool preventDllLoading(strtype& fn, bool wide = false) {
-		boost::algorithm::to_lower(fn);
-		if(Settings::get().getPreventSteamOverlay() 
-				&& (wide ? boost::algorithm::ends_with(fn, L"gameoverlayrenderer.dll") : boost::algorithm::ends_with(fn, "gameoverlayrenderer.dll")) ) {
+	bool preventDllLoading(const string& fileName) {
+		const string fn = toLower(fileName);
+		if(Settings::get().getPreventSteamOverlay() && fn.ends_with("gameoverlayrenderer.dll")) {
 			SDLOG(2, "-> Steam overlay detected, denying access to file\n");
 			SetLastError(ERROR_ACCESS_DENIED);
 			return true;
 		}
-		if(boost::algorithm::iequals(getExeFileName(),"FarCry") && boost::algorithm::ends_with(fn, L"dfhengine.dll")) {
+		if(iequals(getExeFileName(), "FarCry") && fn.ends_with("dfhengine.dll")) {
 			SDLOG(2, "-> DFHEngine (FarCry ad system) detected, denying access to file\n");
 			SetLastError(ERROR_ACCESS_DENIED);
 			return true;
 		}
 		return false;
 	}
+
+	string narrowName(LPCSTR fileName) { return fileName ? string(fileName) : string(); }
+	string narrowName(LPCWSTR fileName) { return fileName ? narrow(fileName) : string(); }
 }
 
 GENERATE_INTERCEPT_HEADER(LoadLibraryA, HMODULE, WINAPI, _In_ LPCSTR lpLibFileName) {
-	SDLOG(22, "DetouredLoadLibraryA %s\n", lpLibFileName);
-
-	if(preventDllLoading(std::string(lpLibFileName))) return NULL;
+	const string fileName = narrowName(lpLibFileName);
+	SDLOG(22, "DetouredLoadLibraryA {}\n", fileName);
+	if(preventDllLoading(fileName)) return NULL;
 
 	HMODULE mod = TrueLoadLibraryA(lpLibFileName);
 	// restart detour in case we missed anything
-	if(mod) restartDetour(lpLibFileName);
+	if(mod) restartDetour(fileName);
 	return mod;
 }
 GENERATE_INTERCEPT_HEADER(LoadLibraryW, HMODULE, WINAPI, _In_ LPCWSTR lpLibFileName) {
-	SDLOG(22, "DetouredLoadLibraryW %s\n", lpLibFileName);
-
-	if(preventDllLoading(std::wstring(lpLibFileName), true)) return NULL;
+	const string fileName = narrowName(lpLibFileName);
+	SDLOG(22, "DetouredLoadLibraryW {}\n", fileName);
+	if(preventDllLoading(fileName)) return NULL;
 
 	HMODULE mod = TrueLoadLibraryW(lpLibFileName);
 	// restart detour in case we missed anything
-	if(mod) restartDetour(CW2A(lpLibFileName));
+	if(mod) restartDetour(fileName);
 	return mod;
 }
 
 GENERATE_INTERCEPT_HEADER(LoadLibraryExA, HMODULE, WINAPI, _In_ LPCSTR lpLibFileName, _Reserved_ HANDLE hFile, _In_ DWORD dwFlags) {
-	SDLOG(22, "DetouredLoadLibraryExA %s\n", lpLibFileName);
-
-	string fn(lpLibFileName);
-	if(fn.find("GeDoSaTo") != fn.npos) return GetCurrentModule(); // find out why we need this
-
-	if(preventDllLoading(std::string(lpLibFileName))) return NULL;
+	const string fileName = narrowName(lpLibFileName);
+	SDLOG(22, "DetouredLoadLibraryExA {}\n", fileName);
+	if(fileName.find("GeDoSaTo") != string::npos) return GetCurrentModule(); // find out why we need this
+	if(preventDllLoading(fileName)) return NULL;
 
 	HMODULE mod = TrueLoadLibraryExA(lpLibFileName, hFile, dwFlags);
 	// restart detour in case we missed anything
-	if(mod) restartDetour(lpLibFileName);
+	if(mod) restartDetour(fileName);
 	return mod;
 }
 GENERATE_INTERCEPT_HEADER(LoadLibraryExW, HMODULE, WINAPI, _In_ LPCWSTR lpLibFileName, _Reserved_ HANDLE hFile, _In_ DWORD dwFlags) {
-	SDLOG(22, "DetouredLoadLibraryExW %s\n", CW2A(lpLibFileName));
-
-	string fn((CW2A(lpLibFileName)));
-	if(fn.find("GeDoSaTo") != fn.npos) return GetCurrentModule(); // find out why we need this
-
-	if(preventDllLoading(std::wstring(lpLibFileName), true)) return NULL;
+	const string fileName = narrowName(lpLibFileName);
+	SDLOG(22, "DetouredLoadLibraryExW {}\n", fileName);
+	if(fileName.find("GeDoSaTo") != string::npos) return GetCurrentModule(); // find out why we need this
+	if(preventDllLoading(fileName)) return NULL;
 
 	HMODULE mod = TrueLoadLibraryExW(lpLibFileName, hFile, dwFlags);
 	// restart detour in case we missed anything
-	if(mod) restartDetour(CW2A(lpLibFileName));
+	if(mod) restartDetour(fileName);
 	return mod;
 }
 
 // D3D9 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 GENERATE_INTERCEPT_HEADER(Direct3DCreate9, IDirect3D9*, APIENTRY, UINT SDKVersion) {
-	SDLOG(0, "=== DetouredDirect3DCreate9 V:%d\n", SDKVersion);
+	SDLOG(0, "=== DetouredDirect3DCreate9 V:{}\n", SDKVersion);
 	IDirect3D9 *d3dint = NULL;
 	d3dint = TrueDirect3DCreate9(SDKVersion);
 
 	if(d3dint != NULL) {
 		hkIDirect3D9 *ret = new hkIDirect3D9(&d3dint);
-		SDLOG(0, "=== Direct3DCreate9 hooking %p\n", ret);
+		SDLOG(0, "=== Direct3DCreate9 hooking {}\n", ret);
 	}
 	SDLOG(0, "=== Direct3DCreate9 returning\n");
 	return d3dint;
 }
 
 GENERATE_INTERCEPT_HEADER(Direct3DCreate9Ex, HRESULT, APIENTRY, UINT SDKVersion, IDirect3D9Ex** pRet) {
-	SDLOG(0, "=== DetrouredDirect3DCreate9Ex V:%d\n", SDKVersion);
+	SDLOG(0, "=== DetrouredDirect3DCreate9Ex V:{}\n", SDKVersion);
 	HRESULT res = TrueDirect3DCreate9Ex(SDKVersion, pRet);
 	
 	if(*pRet != NULL) {
 		*pRet = new hkIDirect3D9Ex(pRet);
-		SDLOG(0, "=== Direct3DCreate9Ex hooking %p\n", *pRet);
+		SDLOG(0, "=== Direct3DCreate9Ex hooking {}\n", *pRet);
 	}
 	SDLOG(0, "=== Direct3DCreate9Ex returning\n");
 	return res;
@@ -179,7 +174,7 @@ GENERATE_INTERCEPT_HEADER(D3DXCreateTextureFromFileInMemory, HRESULT, WINAPI, _I
 }
 GENERATE_INTERCEPT_HEADER(D3DXCreateTextureFromFileInMemoryEx, HRESULT, WINAPI, LPDIRECT3DDEVICE9 pDevice, LPCVOID pSrcData, UINT SrcDataSize, UINT Width, UINT Height, 
 						  UINT MipLevels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, DWORD Filter, DWORD MipFilter, D3DCOLOR ColorKey, D3DXIMAGE_INFO *pSrcInfo, PALETTEENTRY *pPalette, LPDIRECT3DTEXTURE9 *ppTexture) {
-	SDLOG(4, "DetouredD3DXCreateTextureFromFileInMemoryEx: \n -- pDevice %p, pSrcData %p, SrcDataSize %u, Width %u, Height %u, MipLevels %u, Usage %d, Format %s\n",
+	SDLOG(4, "DetouredD3DXCreateTextureFromFileInMemoryEx: \n -- pDevice {}, pSrcData {}, SrcDataSize {}, Width {}, Height {}, MipLevels {}, Usage {}, Format {}\n",
 		pDevice, pSrcData, SrcDataSize, Width, Height, MipLevels, Usage, D3DFormatToString(Format));
 	if(!RSManager::exists()) return TrueD3DXCreateTextureFromFileInMemoryEx(pDevice, pSrcData, SrcDataSize, Width, Height, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
 	if(SrcDataSize == 4294967295u && Width == 4294967295u && Height == 4294967295u) {
@@ -211,7 +206,7 @@ namespace {
 	BOOL DetouredEnumDisplaySettingsTemplate(StringType lpszDeviceName, DWORD iModeNum, DevModeType *lpDevMode, DWORD dwFlags, TrueFnType trueFunction) {
 		BOOL ret = trueFunction(lpszDeviceName, iModeNum, lpDevMode, dwFlags);
 		if(ret) {
-			SDLOG(2, "-> %ux%u %ubpp @ %u Hz\n", lpDevMode->dmPelsWidth, lpDevMode->dmPelsHeight, lpDevMode->dmBitsPerPel, lpDevMode->dmDisplayFrequency);
+			SDLOG(2, "-> {}x{} {}bpp @ {} Hz\n", lpDevMode->dmPelsWidth, lpDevMode->dmPelsHeight, lpDevMode->dmBitsPerPel, lpDevMode->dmDisplayFrequency);
 		}
 		else {
 			SDLOG(2, "-> NULL\n");
@@ -224,7 +219,7 @@ namespace {
 			mode.dmSize = sizeof(DevModeType);
 			mode.dmDriverExtra = 0;
 			while(trueFunction(lpszDeviceName, emptyMode, &mode, dwFlags) != NULL) ++emptyMode;
-			SDLOG(2, "*** Found Emptymode: %u\n", emptyMode);
+			SDLOG(2, "*** Found Emptymode: {}\n", emptyMode);
 		}
 		// enter our modes, either if its number is requested
 		if((emptyMode != 0 && iModeNum >= emptyMode && iModeNum < emptyMode + Settings::getResSettings().getNumResolutions() && ret == NULL)
@@ -237,7 +232,7 @@ namespace {
 			lpDevMode->dmPelsHeight = res.height;
 			lpDevMode->dmDisplayFlags = 0;
 			lpDevMode->dmDisplayFrequency = res.hz;
-			SDLOG(2, "-> Fake %ux%u\n", res.width, res.height);
+			SDLOG(2, "-> Fake {}x{}\n", res.width, res.height);
 			return TRUE;
 		}
 		if(ret && lpDevMode->dmPelsWidth == Settings::get().getOverrideWidth() && lpDevMode->dmPelsHeight == Settings::get().getOverrideHeight()) {
@@ -250,11 +245,11 @@ namespace {
 }
 
 GENERATE_INTERCEPT_HEADER(EnumDisplaySettingsExA, BOOL, WINAPI, _In_ LPCTSTR lpszDeviceName, _In_ DWORD iModeNum, _Out_ DEVMODE *lpDevMode, _In_ DWORD dwFlags) {
-	SDLOG(2, "EnumDisplaySettingsExA %s -- %u\n", lpszDeviceName ? lpszDeviceName : "NULL", iModeNum);
+	SDLOG(2, "EnumDisplaySettingsExA {} -- {}\n", lpszDeviceName ? lpszDeviceName : "NULL", iModeNum);
 	return DetouredEnumDisplaySettingsTemplate(lpszDeviceName, iModeNum, lpDevMode, dwFlags, TrueEnumDisplaySettingsExA);
 }
 GENERATE_INTERCEPT_HEADER(EnumDisplaySettingsExW, BOOL, WINAPI, _In_ LPCWSTR lpszDeviceName, _In_ DWORD iModeNum, _Out_ DEVMODEW *lpDevMode, _In_ DWORD dwFlags) {
-	SDLOG(2, "EnumDisplaySettingsExW %s -- %u\n", lpszDeviceName ? CW2A(lpszDeviceName) : "NULL", iModeNum);
+	SDLOG(2, "EnumDisplaySettingsExW {} -- {}\n", narrow(lpszDeviceName), iModeNum);
 	return DetouredEnumDisplaySettingsTemplate(lpszDeviceName, iModeNum, lpDevMode, dwFlags, TrueEnumDisplaySettingsExW);
 }
 
@@ -296,29 +291,29 @@ GENERATE_INTERCEPT_HEADER(GetClientRect, BOOL, WINAPI, _In_ HWND hWnd, _Out_ LPR
 	SDLOG(2, "DetouredGetClientRect\n");
 	HRESULT ret = TrueGetClientRect(hWnd, lpRect);
 	if(RSManager::currentlyDownsampling() && Settings::get().getModifyGetClientRect()) {
-		SDLOG(2, "- override from %s\n", RectToString(lpRect).c_str());
+		SDLOG(2, "- override from {}\n", RectToString(lpRect).c_str());
 		lpRect->right = Settings::get().getRenderWidth();
 		lpRect->bottom = Settings::get().getRenderHeight();
 	}
-	SDLOG(2, "-> %s\n", RectToString(lpRect).c_str());
+	SDLOG(2, "-> {}\n", RectToString(lpRect).c_str());
 	return ret;
 }
 GENERATE_INTERCEPT_HEADER(GetWindowRect, BOOL, WINAPI, _In_ HWND hWnd, _Out_ LPRECT lpRect) {
 	SDLOG(2, "DetouredGetWindowRect\n");
 	HRESULT ret = TrueGetWindowRect(hWnd, lpRect);
 	if(RSManager::currentlyDownsampling() && Settings::get().getModifyGetWindowRect()) {
-		SDLOG(2, "- override from %s\n", RectToString(lpRect).c_str());
+		SDLOG(2, "- override from {}\n", RectToString(lpRect).c_str());
 		lpRect->right = Settings::get().getRenderWidth();
 		lpRect->bottom = Settings::get().getRenderHeight();
 	}
-	SDLOG(2, "-> %s\n", RectToString(lpRect).c_str());
+	SDLOG(2, "-> {}\n", RectToString(lpRect).c_str());
 	return ret;
 }
 
 // System Metrics ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 GENERATE_INTERCEPT_HEADER(GetSystemMetrics, int, WINAPI, _In_ int nIndex) {
-	SDLOG(1, "DetouredGetSystemMetrics %d - %s\n", nIndex, SystemMetricToString(nIndex));
+	SDLOG(1, "DetouredGetSystemMetrics {} - {}\n", nIndex, SystemMetricToString(nIndex));
 	int ret = TrueGetSystemMetrics(nIndex);
 	if(RSManager::currentlyDownsampling()) {
 		switch(nIndex) {
@@ -336,12 +331,12 @@ GENERATE_INTERCEPT_HEADER(GetSystemMetrics, int, WINAPI, _In_ int nIndex) {
 			break;
 		} 
 	}
-	SDLOG(1, " -> %d\n", ret);
+	SDLOG(1, " -> {}\n", ret);
 	return ret;
 }
 
 GENERATE_INTERCEPT_HEADER(GetDeviceCaps, int, WINAPI, _In_opt_ HDC hdc, _In_ int index) {
-	SDLOG(1, "DetouredGetDeviceCaps %p %s\n", hdc, GetDeviceCapsParamToString(index));
+	SDLOG(1, "DetouredGetDeviceCaps {} {}\n", hdc, GetDeviceCapsParamToString(index));
 	int ret = TrueGetDeviceCaps(hdc, index);
 	return ret;
 }
@@ -356,13 +351,13 @@ namespace {
 }
 
 GENERATE_INTERCEPT_HEADER(GetMonitorInfoA, BOOL, WINAPI, _In_ HMONITOR hMonitor, _Inout_ LPMONITORINFO lpmi) {
-	SDLOG(1, "DetouredGetMonitorInfoA %p\n", hMonitor);
+	SDLOG(1, "DetouredGetMonitorInfoA {}\n", hMonitor);
 	BOOL ret = TrueGetMonitorInfoA(hMonitor, lpmi);
 	adjustMonitorInfo(lpmi);
 	return ret;	
 }
 GENERATE_INTERCEPT_HEADER(GetMonitorInfoW, BOOL, WINAPI, _In_ HMONITOR hMonitor, _Inout_ LPMONITORINFO lpmi) {
-	SDLOG(1, "DetouredGetMonitorInfoW %p\n", hMonitor);
+	SDLOG(1, "DetouredGetMonitorInfoW {}\n", hMonitor);
 	BOOL ret = TrueGetMonitorInfoW(hMonitor, lpmi);
 	adjustMonitorInfo(lpmi);
 	return ret;
@@ -373,7 +368,7 @@ GENERATE_INTERCEPT_HEADER(GetMonitorInfoW, BOOL, WINAPI, _In_ HMONITOR hMonitor,
 GENERATE_INTERCEPT_HEADER(GetCursorPos, BOOL, WINAPI, __out LPPOINT lpPoint) {
 	SDLOG(2, "DetouredGetCursorPos\n");
 	BOOL ret = TrueGetCursorPos(lpPoint);
-	SDLOG(2, " -> %d/%d\n", lpPoint->x, lpPoint->y);
+	SDLOG(2, " -> {}/{}\n", lpPoint->x, lpPoint->y);
 	if(RSManager::currentlyDownsampling() && Settings::get().getModifyGetCursorPos()) {
 		lpPoint->x = lpPoint->x * Settings::get().getRenderWidth() / Settings::get().getPresentWidth();
 		lpPoint->y = lpPoint->y * Settings::get().getRenderHeight() / Settings::get().getPresentHeight();
@@ -381,7 +376,7 @@ GENERATE_INTERCEPT_HEADER(GetCursorPos, BOOL, WINAPI, __out LPPOINT lpPoint) {
 	return ret;
 }
 GENERATE_INTERCEPT_HEADER(SetCursorPos, BOOL, WINAPI, _In_ int X, _In_ int Y) {
-	SDLOG(2, "DetouredSetCursorPos %d/%d\n", X, Y);
+	SDLOG(2, "DetouredSetCursorPos {}/{}\n", X, Y);
 	if(RSManager::currentlyDownsampling() && Settings::get().getModifySetCursorPos()) {
 		if(X == Settings::get().getRenderHeight()/2 && Y == Settings::get().getRenderWidth()/2) {
 			X = Settings::get().getPresentWidth()/2;
@@ -395,12 +390,12 @@ GENERATE_INTERCEPT_HEADER(SetCursorPos, BOOL, WINAPI, _In_ int X, _In_ int Y) {
 	return TrueSetCursorPos(X, Y);
 }
 GENERATE_INTERCEPT_HEADER(SetCursor, HCURSOR, WINAPI, _In_opt_ HCURSOR hCursor) {
-	SDLOG(2, "DetouredSetCursor %p\n", hCursor);
+	SDLOG(2, "DetouredSetCursor {}\n", hCursor);
 	return TrueSetCursor(hCursor);
 }
 
 GENERATE_INTERCEPT_HEADER(ShowCursor, int, WINAPI, _In_ BOOL bShow) {
-	SDLOG(2, "DetouredShowCursor %s\n", bShow ? "true" : "false");
+	SDLOG(2, "DetouredShowCursor {}\n", bShow ? "true" : "false");
 	if(Settings::get().getHideMouseCursor()) {
 		TrueShowCursor(false);
 		return bShow ? 0 : -1;
@@ -409,7 +404,7 @@ GENERATE_INTERCEPT_HEADER(ShowCursor, int, WINAPI, _In_ BOOL bShow) {
 }
 
 GENERATE_INTERCEPT_HEADER(ClipCursor, BOOL, WINAPI, __in_opt CONST RECT *lpRect) {
-	SDLOG(2, "ClipCursor %s\n", RectToString(lpRect));
+	SDLOG(2, "ClipCursor {}\n", RectToString(lpRect));
 	return TrueClipCursor(lpRect);
 }
 
@@ -456,7 +451,7 @@ GENERATE_INTERCEPT_HEADER(GetMessagePos, DWORD, WINAPI) {
 namespace {
 	std::map<HWND, WNDPROC> prevWndProcs;
 	LRESULT CALLBACK InterceptWindowProc(_In_  HWND hwnd, _In_  UINT uMsg, _In_  WPARAM wParam, _In_  LPARAM lParam) {
-		SDLOG(2, "InterceptWindowProc hwnd: %p\n", hwnd);
+		SDLOG(2, "InterceptWindowProc hwnd: {}\n", hwnd);
 		if(RSManager::currentlyDownsampling()) {
 			if(uMsg >= WM_MOUSEFIRST && uMsg <= WM_MOUSELAST) {
 				POINTS p = MAKEPOINTS(lParam);
@@ -468,7 +463,7 @@ namespace {
 			//	return CallWindowProc(prevWndProcs[hwnd], hwnd, uMsg, wParam, MAKELPARAM(Settings::get().getRenderWidth(), Settings::get().getRenderHeight()));
 			//}
 		}
-		SDLOG(2, " -> calling original: %d\n", prevWndProcs[hwnd]);
+		SDLOG(2, " -> calling original: {}\n", prevWndProcs[hwnd]);
 		LRESULT res = CallWindowProc(prevWndProcs[hwnd], hwnd, uMsg, wParam, lParam);
 		return res;
 	}
@@ -476,7 +471,7 @@ namespace {
 
 #ifndef _WIN64
 GENERATE_INTERCEPT_HEADER(GetWindowLongA, LONG, WINAPI, _In_ HWND hWnd, _In_ int nIndex) {
-	SDLOG(2, "DetouredGetWindowLongA hwnd: %p -- index: %s\n", hWnd, WindowLongOffsetToString(nIndex));
+	SDLOG(2, "DetouredGetWindowLongA hwnd: {} -- index: {}\n", hWnd, WindowLongOffsetToString(nIndex));
 	if(nIndex == GWL_WNDPROC && Settings::get().getInterceptWindowProc()) {
 		SDLOG(2, " -> return from table\n");
 		if(prevWndProcs.count(hWnd)>0) return (LONG)prevWndProcs[hWnd];
@@ -484,7 +479,7 @@ GENERATE_INTERCEPT_HEADER(GetWindowLongA, LONG, WINAPI, _In_ HWND hWnd, _In_ int
 	return TrueGetWindowLongA(hWnd, nIndex);
 }
 GENERATE_INTERCEPT_HEADER(GetWindowLongW, LONG, WINAPI, _In_ HWND hWnd, _In_ int nIndex) {
-	SDLOG(2, "DetouredGetWindowLongW hwnd: %p -- index: %s\n", hWnd, WindowLongOffsetToString(nIndex));
+	SDLOG(2, "DetouredGetWindowLongW hwnd: {} -- index: {}\n", hWnd, WindowLongOffsetToString(nIndex));
 	if(nIndex == GWL_WNDPROC && Settings::get().getInterceptWindowProc()) {
 		SDLOG(2, " -> return from table\n");
 		if(prevWndProcs.count(hWnd)>0) return (LONG)prevWndProcs[hWnd];
@@ -493,7 +488,7 @@ GENERATE_INTERCEPT_HEADER(GetWindowLongW, LONG, WINAPI, _In_ HWND hWnd, _In_ int
 }
 
 GENERATE_INTERCEPT_HEADER(SetWindowLongA, LONG, WINAPI, _In_ HWND hWnd, _In_ int nIndex, _In_ LONG dwNewLong) {
-	SDLOG(2, "DetouredSetWindowLongA hwnd: %p -- index: %s -- value: %d\n", hWnd, WindowLongOffsetToString(nIndex), dwNewLong);
+	SDLOG(2, "DetouredSetWindowLongA hwnd: {} -- index: {} -- value: {}\n", hWnd, WindowLongOffsetToString(nIndex), dwNewLong);
 	WindowManager::get().adjustSetWindowLong(nIndex, dwNewLong);
 	LONG ret = TrueSetWindowLongA(hWnd, nIndex, dwNewLong);
 	if(nIndex == GWL_WNDPROC && Settings::get().getInterceptWindowProc()) {
@@ -504,7 +499,7 @@ GENERATE_INTERCEPT_HEADER(SetWindowLongA, LONG, WINAPI, _In_ HWND hWnd, _In_ int
 	return ret;
 }
 GENERATE_INTERCEPT_HEADER(SetWindowLongW, LONG, WINAPI, _In_ HWND hWnd, _In_ int nIndex, _In_ LONG dwNewLong) {
-	SDLOG(2, "DetouredSetWindowLongW hwnd: %p -- index: %s -- value: %d\n", hWnd, WindowLongOffsetToString(nIndex), dwNewLong);
+	SDLOG(2, "DetouredSetWindowLongW hwnd: {} -- index: {} -- value: {}\n", hWnd, WindowLongOffsetToString(nIndex), dwNewLong);
 	WindowManager::get().adjustSetWindowLong(nIndex, dwNewLong);
 	LONG ret = TrueSetWindowLongW(hWnd, nIndex, dwNewLong);
 	if(nIndex == GWL_WNDPROC && Settings::get().getInterceptWindowProc()) {
@@ -637,11 +632,11 @@ GENERATE_INTERCEPT_HEADER(D3D11CreateDevice, HRESULT, WINAPI,
 		_Out_opt_ ID3D11Device** ppDevice,
 		_Out_opt_ D3D_FEATURE_LEVEL* pFeatureLevel,
 		_Out_opt_ ID3D11DeviceContext** ppImmediateContext) {
-	SDLOG(0, "DetouredD3D11CreateDevice ppDevice: %p (%p) ppImmediateContext: %p (%p)\n",
+	SDLOG(0, "DetouredD3D11CreateDevice ppDevice: {} ({}) ppImmediateContext: {} ({})\n",
 		ppDevice, ppDevice ? *ppDevice : NULL, ppImmediateContext, ppImmediateContext ? *ppImmediateContext : NULL);
 	g_NeedD3D11Hooking = true;
 	HRESULT ret = TrueD3D11CreateDevice(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, ppDevice, pFeatureLevel, ppImmediateContext);
-	SDLOG(0, "-> ppDevice: %p (%p) ppImmediateContext: %p (%p)\n",
+	SDLOG(0, "-> ppDevice: {} ({}) ppImmediateContext: {} ({})\n",
 		ppDevice, ppDevice ? *ppDevice : NULL, ppImmediateContext, ppImmediateContext ? *ppImmediateContext : NULL);
 	// Check for success and non-null ppDevice and context (can be set to null to check feature level)
 	// also check if call was delegated to D3D11CreateDeviceAndSwapChain internally
@@ -666,10 +661,10 @@ GENERATE_INTERCEPT_HEADER(D3D11CreateDeviceAndSwapChain, HRESULT, WINAPI,
 		_Out_opt_ ID3D11Device** ppDevice,
 		_Out_opt_ D3D_FEATURE_LEVEL* pFeatureLevel,
 		_Out_opt_ ID3D11DeviceContext** ppImmediateContext) {
-	SDLOG(0, "DetouredD3D11CreateDeviceAndSwapChain ppDevice: %p (%p) ppImmediateContext: %p (%p) ppSwapChain: %p (%p)\n",
+	SDLOG(0, "DetouredD3D11CreateDeviceAndSwapChain ppDevice: {} ({}) ppImmediateContext: {} ({}) ppSwapChain: {} ({})\n",
 		ppDevice, ppDevice ? *ppDevice : NULL, ppImmediateContext, ppImmediateContext ? *ppImmediateContext : NULL, ppSwapChain, ppSwapChain ? *ppSwapChain : NULL);
 	HRESULT ret = TrueD3D11CreateDeviceAndSwapChain(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, pSwapChainDesc, ppSwapChain, ppDevice, pFeatureLevel, ppImmediateContext);
-	SDLOG(0, "-> ppDevice: %p(%p) ppImmediateContext : %p(%p) ppSwapChain : %p(%p)\n",
+	SDLOG(0, "-> ppDevice: {}({}) ppImmediateContext : {}({}) ppSwapChain : {}({})\n",
 		ppDevice, ppDevice ? *ppDevice : NULL, ppImmediateContext, ppImmediateContext ? *ppImmediateContext : NULL, ppSwapChain, ppSwapChain ? *ppSwapChain : NULL);
 	// Check for success and non-null ppDevice and context (can be set to null to check feature level)
 	if(SUCCEEDED(ret)) {
@@ -708,7 +703,7 @@ GENERATE_INTERCEPT_HEADER(Sleep, VOID, WINAPI, _In_ DWORD dwMilliseconds) {
 
 GENERATE_INTERCEPT_HEADER(CreateTimerQueueTimer, BOOL, WINAPI, _Out_ PHANDLE phNewTimer, _In_opt_ HANDLE TimerQueue, _In_ WAITORTIMERCALLBACK Callback, 
 		_In_opt_ PVOID Parameter, _In_ DWORD DueTime, _In_ DWORD Period, _In_ ULONG Flags) {	
-	SDLOG(35, "DetouredCreateTimerQueueTimer(%p, %p, %p, %p, [duetime] %lu, [period] %lu, %p)\n", phNewTimer, TimerQueue, Callback, Parameter, DueTime, Period, Flags);
+	SDLOG(35, "DetouredCreateTimerQueueTimer({}, {}, {}, {}, [duetime] {}, [period] {}, {})\n", phNewTimer, TimerQueue, Callback, Parameter, DueTime, Period, Flags);
 	return TrueCreateTimerQueueTimer(phNewTimer, TimerQueue, Callback, Parameter, DueTime, Period, Flags);
 }
 
@@ -729,6 +724,8 @@ GENERATE_INTERCEPT_HEADER(FileTimeToSystemTime, BOOL, WINAPI, _In_ CONST FILETIM
 }
 
 // Steam ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Only built with the Steamworks SDK (see GeDoSaTo.vcxproj): Valve's headers can't ship with GPL source.
+#ifdef GEDOSATO_STEAM_HOOK
 
 GENERATE_INTERCEPT_HEADER(SteamFriends, ISteamFriends*, WINAPI) {
 	SDLOG(18, "SteamFriends\n");
@@ -744,15 +741,12 @@ GENERATE_INTERCEPT_HEADER(SteamFriends, ISteamFriends*, WINAPI) {
 	return TrueSteamFriends();
 }
 
-// OpenGL ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-GENERATE_INTERCEPT_HEADER(glTexImage2D, void, WINAPI, GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid * data);
-GENERATE_INTERCEPT_HEADER(glPixelMapfv, void, WINAPI, GLenum map, GLsizei mapsize, const GLfloat * values);
+#endif // GEDOSATO_STEAM_HOOK
 
 // GetProcAddress ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 GENERATE_INTERCEPT_HEADER(GetProcAddress, FARPROC, WINAPI, _In_ HMODULE hModule, _In_ LPCSTR lpProcName) {
-	SDLOG(15, "DetouredGetProcAddress %s\n", lpProcName);
+	SDLOG(15, "DetouredGetProcAddress {}\n", lpProcName);
 
 	#define HOOK(__name, __dllname) \
 	if(string(#__name) == lpProcName) { \
@@ -779,7 +773,7 @@ string getSystemDllName(const string& name) {
 	}
 	string fullPath = string(sysdir) + "\\" + name;
 
-	SDLOG(28, "Full dll path: %s\n", fullPath.c_str());
+	SDLOG(28, "Full dll path: {}\n", fullPath.c_str());
 	return fullPath;
 }
 
@@ -792,9 +786,9 @@ HMODULE findDll(const string& name) {
 			for(unsigned i=0; i < (needed / sizeof(HMODULE)); i++) {
 				TCHAR modname[MAX_PATH];
 				if(GetModuleFileNameEx(GetCurrentProcess(), modules[i], modname, sizeof(modname)/sizeof(TCHAR))) {
-					SDLOG(46, " - checking against module %s\n", modname);
+					SDLOG(46, " - checking against module {}\n", modname);
 					if(matchWildcard(modname, name)) {
-						SDLOG(1, "Found dll matching pattern %s in %s\n", name.c_str(), modname);
+						SDLOG(1, "Found dll matching pattern {} in {}\n", name.c_str(), modname);
 						return modules[i];
 					}
 				}
@@ -809,27 +803,27 @@ HMODULE findDll(const string& name) {
 }
 
 void hookFunction(const char* name, const char* dllname, void **ppTarget, void* const pDetour, void** ppOriginal, bool& flag) {
-	if(!Settings::get().getEnableDX11() && (boost::algorithm::icontains(name, "DX11") || boost::algorithm::icontains(name, "DXGI"))) return;
+	if(!Settings::get().getEnableDX11() && (icontains(name, "D3D11") || icontains(name, "DXGI"))) return; // legacy DX11 path stays off unless enabled
 	if(!flag) {
-		SDLOG(36, "Trying to hook %s in %s\n", name, dllname);
+		SDLOG(36, "Trying to hook {} in {}\n", name, dllname);
 		HMODULE dllhandle = findDll(dllname);
 		if(dllhandle) {
 			*ppTarget = completedGetProcAddressDetour ? TrueGetProcAddress(dllhandle, name) : GetProcAddress(dllhandle, name);
 			MH_STATUS ret = MH_CreateHook(*ppTarget, pDetour, ppOriginal); 
 			if(ret == MH_OK) { 
-				SDLOG(1, " -> Created hook for %s, target: %p, dll: %p\n", name, ppTarget, dllhandle); 
+				SDLOG(1, " -> Created hook for {}, target: {}, dll: {}\n", name, ppTarget, dllhandle); 
 			} 
 			else { 
-				SDLOG(-1, " -> ERROR %d creating hook for %s, target: %p, dll: %p\n", ret, name, ppTarget, dllhandle);
+				SDLOG(-1, " -> ERROR {} creating hook for {}, target: {}, dll: {}\n", ret, name, ppTarget, dllhandle);
 				return;
 			} 
 			ret = MH_EnableHook(*ppTarget); 
 			if(ret == MH_OK) { 
-				SDLOG(1, " -> Enabled hook for %s\n", name); 
+				SDLOG(1, " -> Enabled hook for {}\n", name); 
 				flag = true;
 			} 
 			else { 
-				SDLOG(0, " -> ERROR %d enabling hook for %s\n", ret, name); 
+				SDLOG(0, " -> ERROR {} enabling hook for {}\n", ret, name); 
 			} 
 		} else SDLOG(36, " -> DLL not found!\n")
 	}

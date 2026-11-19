@@ -26,7 +26,7 @@ ULONG APIENTRY hkIDirect3DSwapChain9::AddRef() {
 ULONG APIENTRY hkIDirect3DSwapChain9::Release() {
 	SDLOG(20, "hkIDirect3DSwapChain9::Release\n");
 	auto ret = m_pWrapped->Release();
-	SDLOG(0, " -> %u\n", ret);
+	SDLOG(0, " -> {}\n", ret);
 	if(ret == 0) {
 		RSManager::getDX9().releaseSwapChain();
 		delete this;
@@ -36,7 +36,7 @@ ULONG APIENTRY hkIDirect3DSwapChain9::Release() {
 
 HRESULT APIENTRY hkIDirect3DSwapChain9::Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion, DWORD dwFlags) {
 	SDLOG(3, "hkIDirect3DSwapChain9::Present\n");
-	SDLOG(8, " - source: %s ; dest: %s ; hwnd: %p ; rgn: %p\n", RectToString(pSourceRect), RectToString(pDestRect), hDestWindowOverride, pDirtyRegion);
+	SDLOG(8, " - source: {} ; dest: {} ; hwnd: {} ; rgn: {}\n", RectToString(pSourceRect), RectToString(pDestRect), hDestWindowOverride, pDirtyRegion);
 	return RSManager::getDX9().redirectPresent(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion); // TODO: dwflags?
 }
 

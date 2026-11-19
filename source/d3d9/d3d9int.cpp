@@ -19,18 +19,18 @@ ULONG APIENTRY hkIDirect3D9::AddRef() {
 }
 
 HRESULT APIENTRY hkIDirect3D9::CheckDepthStencilMatch(UINT Adapter, D3DDEVTYPE DeviceType, D3DFORMAT AdapterFormat, D3DFORMAT RenderTargetFormat, D3DFORMAT DepthStencilFormat) {
-	SDLOG(0, "CheckDepthStencilMatch adapter %u, device %s, adapterformat: %s, renderformat: %s, depthformat: %s\n",
+	SDLOG(0, "CheckDepthStencilMatch adapter {}, device {}, adapterformat: {}, renderformat: {}, depthformat: {}\n",
 		Adapter, D3DDevTypeToString(DeviceType), D3DFormatToString(AdapterFormat), D3DFormatToString(RenderTargetFormat), D3DFormatToString(DepthStencilFormat));
 	HRESULT res =  m_pD3Dint->CheckDepthStencilMatch(Adapter, DeviceType, AdapterFormat, RenderTargetFormat, DepthStencilFormat);
-	SDLOG(0, " -> %s\n", res == D3D_OK ? "OK" : "NOT OK!");
+	SDLOG(0, " -> {}\n", res == D3D_OK ? "OK" : "NOT OK!");
 	return res;
 }
 
 HRESULT APIENTRY hkIDirect3D9::CheckDeviceFormat(UINT Adapter, D3DDEVTYPE DeviceType, D3DFORMAT AdapterFormat, DWORD Usage, D3DRESOURCETYPE RType, D3DFORMAT CheckFormat) {
-	SDLOG(0, "CheckDeviceFormat adapter %u, device %s, adapterformat: %s, usage: %u, resource: %s, checkformat: %s\n", 
+	SDLOG(0, "CheckDeviceFormat adapter {}, device {}, adapterformat: {}, usage: {}, resource: {}, checkformat: {}\n", 
 		Adapter, D3DDevTypeToString(DeviceType), D3DFormatToString(AdapterFormat), Usage, D3DResourceTypeToString(RType), D3DFormatToString(CheckFormat));
 	HRESULT res = m_pD3Dint->CheckDeviceFormat(Adapter, DeviceType, AdapterFormat, Usage, RType, CheckFormat);
-	SDLOG(0, " -> %s\n", res == D3D_OK ? "OK" : "NOT OK!");
+	SDLOG(0, " -> {}\n", res == D3D_OK ? "OK" : "NOT OK!");
 	return res;
 }
 
@@ -40,10 +40,10 @@ HRESULT APIENTRY hkIDirect3D9::CheckDeviceFormatConversion(UINT Adapter,D3DDEVTY
 }
 
 HRESULT APIENTRY hkIDirect3D9::CheckDeviceMultiSampleType(UINT Adapter, D3DDEVTYPE DeviceType, D3DFORMAT SurfaceFormat, BOOL Windowed, D3DMULTISAMPLE_TYPE MultiSampleType, DWORD* pQualityLevels) {
-	SDLOG(0, "CheckDeviceMultiSampleType adapter %u, device %s, surfaceformat: %s, windowed %s, multisampletype: %s\n",
+	SDLOG(0, "CheckDeviceMultiSampleType adapter {}, device {}, surfaceformat: {}, windowed {}, multisampletype: {}\n",
 		Adapter, D3DDevTypeToString(DeviceType), D3DFormatToString(SurfaceFormat), Windowed?"true":"false", D3DMultisampleTypeToString(MultiSampleType));
 	HRESULT res = m_pD3Dint->CheckDeviceMultiSampleType(Adapter, DeviceType, SurfaceFormat, Windowed, MultiSampleType, pQualityLevels);
-	SDLOG(0, " -> %s / q: %d\n", res == D3D_OK ? "OK" : "NOT OK!", pQualityLevels ? *pQualityLevels : -1);
+	SDLOG(0, " -> {} / q: {}\n", res == D3D_OK ? "OK" : "NOT OK!", pQualityLevels ? *pQualityLevels : -1);
 	return res;
 }
 
@@ -53,7 +53,7 @@ HRESULT APIENTRY hkIDirect3D9::CheckDeviceType(UINT Adapter, D3DDEVTYPE CheckTyp
 }
 
 HRESULT APIENTRY hkIDirect3D9::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS *pPresentationParameters, IDirect3DDevice9 **ppReturnedDeviceInterface) {
-	SDLOG(0, "CreateDevice ------ Adapter %u Thread %u\n", Adapter, GetCurrentThreadId());
+	SDLOG(0, "CreateDevice ------ Adapter {} Thread {}\n", Adapter, GetCurrentThreadId());
 	if(Settings::get().getAdapterOverride() > 0) {
 		Adapter = Settings::get().getAdapterOverride();
 	}
@@ -67,7 +67,7 @@ HRESULT APIENTRY hkIDirect3D9::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType,
 }
 
 HRESULT APIENTRY hkIDirect3D9::EnumAdapterModes(UINT Adapter, D3DFORMAT Format, UINT Mode, D3DDISPLAYMODE* pMode) {
-	SDLOG(2, "EnumAdapterModes ------ Adapter %u | %s : %u\n", Adapter, D3DFormatToString(Format), Mode);
+	SDLOG(2, "EnumAdapterModes ------ Adapter {} | {} : {}\n", Adapter, D3DFormatToString(Format), Mode);
 	unsigned baseModes = m_pD3Dint->GetAdapterModeCount(Adapter, Format);
 	if(Mode >= baseModes) {
 		SDLOG(0, "Injecting downsampling mode!\n");
@@ -108,22 +108,22 @@ HRESULT APIENTRY hkIDirect3D9::GetAdapterIdentifier(UINT Adapter, DWORD Flags, D
 }
 
 UINT APIENTRY hkIDirect3D9::GetAdapterModeCount(UINT Adapter, D3DFORMAT Format) {
-	SDLOG(2, "GetAdapterModeCount Adapter %u | %s ------\n", Adapter, D3DFormatToString(Format));
+	SDLOG(2, "GetAdapterModeCount Adapter {} | {} ------\n", Adapter, D3DFormatToString(Format));
 	UINT ret = m_pD3Dint->GetAdapterModeCount(Adapter, Format);
 	UINT reported = ret == 0 ? 0 : ret + static_cast<UINT>(Settings::getResSettings().getNumResolutions());
-	SDLOG(2, " -> %u (reporting %u)\n", ret, reported);
+	SDLOG(2, " -> {} (reporting {})\n", ret, reported);
 	return reported;
 }
 
 HMONITOR APIENTRY hkIDirect3D9::GetAdapterMonitor(UINT Adapter) {
-	SDLOG(0, "GetAdapterMonitor adapter %u ------\n", Adapter);
+	SDLOG(0, "GetAdapterMonitor adapter {} ------\n", Adapter);
 	HMONITOR res = m_pD3Dint->GetAdapterMonitor(Adapter);
-	SDLOG(0, "-> %p\n", res);
+	SDLOG(0, "-> {}\n", res);
 	return res;
 }
 
 HRESULT APIENTRY hkIDirect3D9::GetDeviceCaps(UINT Adapter, D3DDEVTYPE DeviceType, D3DCAPS9 *pCaps) {
-	SDLOG(0, "GetDeviceCaps %u %x %p ------\n", Adapter, DeviceType, pCaps);
+	SDLOG(0, "GetDeviceCaps {} {:x} {} ------\n", Adapter, DeviceType, pCaps);
 	return m_pD3Dint->GetDeviceCaps(Adapter, DeviceType, pCaps);
 }
 
@@ -133,7 +133,7 @@ HRESULT APIENTRY hkIDirect3D9::RegisterSoftwareDevice(void *pInitializeFunction)
 }
 
 ULONG APIENTRY hkIDirect3D9::Release() {
-	SDLOG(20, "Release hkIDirect3D9 ------ %p \n", this);
+	SDLOG(20, "Release hkIDirect3D9 ------ {} \n", this);
 	ULONG res = m_pD3Dint->Release();
 	if(res == 0) {
 		delete this;

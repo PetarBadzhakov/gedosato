@@ -6,17 +6,17 @@ using std::string;
 
 IDirect3DTexture9* D3DGetSurfTexture(IDirect3DSurface9* pSurface);
 
-TCHAR* D3DFormatToString(D3DFORMAT format, bool bWithPrefix = true);
-TCHAR* D3DSamplerStateTypeToString(D3DSAMPLERSTATETYPE state);
-TCHAR* D3DDeclTypeToString(D3DDECLTYPE type);
-TCHAR* D3DDeclUsageToString(D3DDECLUSAGE type);
-TCHAR* D3DDevTypeToString(D3DDEVTYPE type);
-TCHAR* D3DResourceTypeToString(D3DRESOURCETYPE type);
-TCHAR* D3DMultisampleTypeToString(D3DMULTISAMPLE_TYPE type);
-TCHAR* D3DSwapEffectToString(D3DSWAPEFFECT swap);
-TCHAR* D3DRenderStateTypeToString(D3DRENDERSTATETYPE s);
-TCHAR* D3DPoolToString(D3DPOOL pool);
-TCHAR* D3DPrimitiveTypeToString(D3DPRIMITIVETYPE prim);
+const char* D3DFormatToString(D3DFORMAT format, bool bWithPrefix = true);
+const char* D3DSamplerStateTypeToString(D3DSAMPLERSTATETYPE state);
+const char* D3DDeclTypeToString(D3DDECLTYPE type);
+const char* D3DDeclUsageToString(D3DDECLUSAGE type);
+const char* D3DDevTypeToString(D3DDEVTYPE type);
+const char* D3DResourceTypeToString(D3DRESOURCETYPE type);
+const char* D3DMultisampleTypeToString(D3DMULTISAMPLE_TYPE type);
+const char* D3DSwapEffectToString(D3DSWAPEFFECT swap);
+const char* D3DRenderStateTypeToString(D3DRENDERSTATETYPE s);
+const char* D3DPoolToString(D3DPOOL pool);
+const char* D3DPrimitiveTypeToString(D3DPRIMITIVETYPE prim);
 
 string D3DMatrixToString(const D3DMATRIX* pMatrix);
 string D3DPresentExFlagsToString(DWORD flags);

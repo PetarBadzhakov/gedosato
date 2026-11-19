@@ -6,19 +6,19 @@
 #include <fstream>
 using namespace std;
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 namespace {
 	static string listedName = "Unnamed";
 
 	bool onListInternal(std::string fn, const std::string& listfn) {
 		auto path = getConfigFileName(listfn);
-		if(!boost::filesystem::exists(path)) return false;
+		if(!std::filesystem::exists(path)) return false;
 		std::ifstream infile(path);
 		string line;
-		boost::algorithm::trim(fn);
+		fn = trim(fn);
 		while(std::getline(infile, line)) {
-			boost::algorithm::trim(line);
+			line = trim(line);
 			if(line.size() == 0) continue;
 			if(line[0] == '#') continue;
 			size_t splitpos = line.find("||");
@@ -26,8 +26,8 @@ namespace {
 			if(splitpos != line.npos) {
 				name = line.substr(splitpos + 2);
 				line = line.substr(0, splitpos);
-				boost::algorithm::trim(line);
-				boost::algorithm::trim(name);
+				line = trim(line);
+				name = trim(name);
 			}
 			if(matchWildcard(fn, line)) {
 				listedName = name;

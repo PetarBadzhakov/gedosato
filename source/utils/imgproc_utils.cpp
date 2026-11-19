@@ -525,7 +525,7 @@ void TextureScaler::Scale(u32* &data, int &width, int &height, int factor) {
 			ScaleHybrid(factor, inputBuf, outputBuf, width, height, true);
 			break;
 		default:
-			SDLOG(-1, "Unknown scaling type: %d", Settings::get().getTextureScalingMode());
+			SDLOG(-1, "Unknown scaling type: {}", Settings::get().getTextureScalingMode());
 		}
 	}
 

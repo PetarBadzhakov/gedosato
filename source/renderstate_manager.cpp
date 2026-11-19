@@ -40,7 +40,7 @@ bool RSManager::currentlyDownsampling() {
 
 void RSManager::enableTakeScreenshot(ScreenshotType type) {
 	takeScreenshot |= type;
-	SDLOG(0, "takeScreenshot: %d\n", type);
+	SDLOG(0, "takeScreenshot: {}\n", type);
 }
 
 //// Performance tracing
@@ -106,7 +106,7 @@ void RSManager::genericPrePresent() {
 	cpuFrameTimes.add(cpuFrameTimer.elapsed() / 1000.0);
 	perfMonitor->end();
 	double cpuTime = cpuFrameTimes.get(), gpuTime = perfMonitor->getCurrent();
-	frameTimeText->text = format("  %s\nFrame times (avg/max):\n CPU: %6.2lf / %6.2lf ms\n GPU: %6.2f / %6.2lf ms\nFPS: %4.3lf",
+	frameTimeText->text = strFormat("  {}\nFrame times (avg/max):\n CPU: {:6.2f} / {:6.2f} ms\n GPU: {:6.2f} / {:6.2f} ms\nFPS: {:4.3f}",
 		getTimeString(true), cpuTime, cpuFrameTimes.maximum(), gpuTime, perfMonitor->getMax(), 1000.0 / max(cpuTime, gpuTime));
 	if(perfTrace) perfTrace->addFrame(cpuTime, gpuTime);
 

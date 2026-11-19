@@ -7,15 +7,15 @@
 /////////
 
 UINT APIENTRY hkIDirect3D9Ex::GetAdapterModeCountEx(UINT Adapter, CONST D3DDISPLAYMODEFILTER* pFilter) {
-	SDLOG(2, "GetAdapterModeCountEx Adapter %u | %s ------\n", Adapter, D3DFormatToString(pFilter->Format));
+	SDLOG(2, "GetAdapterModeCountEx Adapter {} | {} ------\n", Adapter, D3DFormatToString(pFilter->Format));
 	UINT ret = m_pD3Dint->GetAdapterModeCountEx(Adapter, pFilter);
 	UINT reported = ret == 0 ? 0 : ret + static_cast<UINT>(Settings::getResSettings().getNumResolutions());
-	SDLOG(2, " -> %u (reporting %u)\n", ret, reported);
+	SDLOG(2, " -> {} (reporting {})\n", ret, reported);
 	return reported;
 }
 
 HRESULT APIENTRY hkIDirect3D9Ex::EnumAdapterModesEx(UINT Adapter, CONST D3DDISPLAYMODEFILTER* pFilter, UINT Mode, D3DDISPLAYMODEEX* pMode) {
-	SDLOG(2, "EnumAdapterModesEx ------ Adapter %u | %s : %u\n", Adapter, D3DFormatToString(pFilter->Format), Mode);
+	SDLOG(2, "EnumAdapterModesEx ------ Adapter {} | {} : {}\n", Adapter, D3DFormatToString(pFilter->Format), Mode);
 	unsigned baseModes = m_pD3Dint->GetAdapterModeCountEx(Adapter, pFilter);
 	if(Mode >= baseModes) {
 		SDLOG(0, "Injecting downsampling mode!\n");
@@ -43,7 +43,7 @@ HRESULT APIENTRY hkIDirect3D9Ex::GetAdapterDisplayModeEx(UINT Adapter, D3DDISPLA
 
 HRESULT APIENTRY hkIDirect3D9Ex::CreateDeviceEx(UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS* pPresentationParameters, 
 												D3DDISPLAYMODEEX* pFullscreenDisplayMode, IDirect3DDevice9Ex** ppReturnedDeviceInterface) {
-	SDLOG(0, "CreateDeviceEx ------ Adapter %u Thread %u\n", Adapter, GetCurrentThreadId());
+	SDLOG(0, "CreateDeviceEx ------ Adapter {} Thread {}\n", Adapter, GetCurrentThreadId());
 	return RSManagerDX9::redirectCreateDeviceEx(m_pD3Dint, Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, pFullscreenDisplayMode, ppReturnedDeviceInterface);
 }
 

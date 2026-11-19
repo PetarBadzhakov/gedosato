@@ -26,15 +26,15 @@ bool operator<(const GUID& lhs, const GUID& rhs) noexcept {
 }
 
 HRESULT InterfaceRegistry::QueryInterface(const char* name, IUnknown* object, REFIID riid, void **ppvObject) {
-	SDLOG(20, "%s::QueryInterface id: %d  ;  oIn: %p\n", name, riid, ppvObject ? *ppvObject : 0);
-	SDLOG(20, " (this: %p  ;  pWrapped: %p)\n", this, object);
+	SDLOG(20, "{}::QueryInterface id: {}  ;  oIn: {}\n", name, riid, ppvObject ? *ppvObject : 0);
+	SDLOG(20, " (this: {}  ;  pWrapped: {})\n", this, object);
 	if(riid == g_unwrapUUID) {
-		SDLOG(20, " -> unwrap request, returning %p\n", object);
+		SDLOG(20, " -> unwrap request, returning {}\n", object);
 		*ppvObject = object;
 		return S_OK;
 	}
 	auto hr = object->QueryInterface(riid, ppvObject);
-	SDLOG(20, " -> hr: %d  ;  oOut: %p\n", hr, ppvObject ? *ppvObject : 0);
+	SDLOG(20, " -> hr: {}  ;  oOut: {}\n", hr, ppvObject ? *ppvObject : 0);
 	if(SUCCEEDED(hr)) {
 		*ppvObject = getWrappedInterface(*ppvObject, riid);
 	}
@@ -42,10 +42,10 @@ HRESULT InterfaceRegistry::QueryInterface(const char* name, IUnknown* object, RE
 }
 
 HRESULT InterfaceRegistry::GetParent(const char* name, IDXGIObject* object, REFIID riid, void **ppvObject) {
-	SDLOG(20, "%s::GetParent id: %d  ;  oIn: %p\n", name, riid, ppvObject ? *ppvObject : 0);
-	SDLOG(20, " (this: %p  ;  pWrapped: %p)\n", this, object);
+	SDLOG(20, "{}::GetParent id: {}  ;  oIn: {}\n", name, riid, ppvObject ? *ppvObject : 0);
+	SDLOG(20, " (this: {}  ;  pWrapped: {})\n", this, object);
 	auto hr = object->GetParent(riid, ppvObject);
-	SDLOG(20, " -> hr: %d  ;  oOut: %p\n", hr, ppvObject ? *ppvObject : 0);
+	SDLOG(20, " -> hr: {}  ;  oOut: {}\n", hr, ppvObject ? *ppvObject : 0);
 	if(SUCCEEDED(hr)) {
 		*ppvObject = getWrappedInterface(*ppvObject, riid);
 	}
@@ -54,12 +54,12 @@ HRESULT InterfaceRegistry::GetParent(const char* name, IDXGIObject* object, REFI
 
 void* InterfaceRegistry::getWrappedInterface(void* original, REFIID refiid) {
 	std::lock_guard<std::recursive_mutex> guard(mutex);
-	SDLOG(5, "InterfaceRegistry::getWrappedInterface %p // %s\n", original, refiid);
+	SDLOG(5, "InterfaceRegistry::getWrappedInterface {} // {}\n", original, refiid);
 	IndexType id {original, refiid};
-	SDLOG(10, " - looking for id: (%p, %s)\n", id.first, id.second);
+	SDLOG(10, " - looking for id: ({}, {})\n", id.first, id.second);
 	auto it = registry.find(id);
 	if(it != registry.end()) {
-		SDLOG(5, " -> found id (%p, %s), returning %p\n", it->first.first, it->first.second, it->second);
+		SDLOG(5, " -> found id ({}, {}), returning {}\n", it->first.first, it->first.second, it->second);
 		return it->second;
 	}
 	SDLOG(5, " -> not found, creating\n");
@@ -73,11 +73,11 @@ void* InterfaceRegistry::getWrappedInterface(void* original, REFIID refiid) {
 	#include "uuids.def"
 
 	if(!wrapper) {
-		SDLOG(5, "WARNING InterfaceRegistry::getWrappedInterface: unknown UUID, no wrapper created (returning original %p)\n", original);
+		SDLOG(5, "WARNING InterfaceRegistry::getWrappedInterface: unknown UUID, no wrapper created (returning original {})\n", original);
 		return original;
 	}
 	else {
-		SDLOG(5, " -> created, returning %p\n", wrapper);
+		SDLOG(5, " -> created, returning {}\n", wrapper);
 		registry.insert({id, wrapper});
 		reverseReg.insert({wrapper, id});
 		return wrapper;
@@ -85,7 +85,7 @@ void* InterfaceRegistry::getWrappedInterface(void* original, REFIID refiid) {
 }
 void InterfaceRegistry::unregisterWrapper(void* wrapper) {
 	std::lock_guard<std::recursive_mutex> guard(mutex);
-	SDLOG(5, "InterfaceRegistry::unregisterWrapper %p\n", wrapper);
+	SDLOG(5, "InterfaceRegistry::unregisterWrapper {}\n", wrapper);
 	// look up ids and erase in reg
 	auto range = reverseReg.equal_range(wrapper);
 	for(auto i = range.first; i!=range.second; ++i) {
@@ -94,7 +94,7 @@ void InterfaceRegistry::unregisterWrapper(void* wrapper) {
 	// erase in reverse reg
 	auto num = reverseReg.erase(wrapper);
 	if(num == 0) {
-		SDLOG(5, "WARNING InterfaceRegistry::unregisterWrapper: unexpected number of deletions: %d\n", num);
+		SDLOG(5, "WARNING InterfaceRegistry::unregisterWrapper: unexpected number of deletions: {}\n", num);
 	}
 }
 

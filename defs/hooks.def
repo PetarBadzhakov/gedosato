@@ -71,10 +71,9 @@ HOOK(FileTimeToSystemTime, "Kernel32.dll")
 
 HOOK(timeGetTime, "Winmm.dll")
 
+#ifdef GEDOSATO_STEAM_HOOK
 HOOK(SteamFriends, "steam_api.dll")
-
-HOOK(glTexImage2D, "OPENGL32.dll")
-HOOK(glPixelMapfv, "OPENGL32.dll")
+#endif
 
 //HOOK(GetProcAddress, "Kernel32.dll")
 

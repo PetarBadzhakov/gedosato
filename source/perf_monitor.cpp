@@ -1,5 +1,6 @@
 #include "perf_monitor.h"
 
+#include <algorithm>
 #include <fstream>
 
 PerfTrace::PerfTrace() {
@@ -18,7 +19,7 @@ void PerfTrace::addFrame(double cpu_t, double gpu_t) {
 void PerfTrace::storeResult() {
 	total.stop();
 	double tot_ms = total.elapsed() / 1000.0;
-	string logFn = format("logs\\%s_%s_perf.txt", getExeFileName().c_str(), getTimeString().c_str());
+	string logFn = strFormat("logs\\{}_{}_perf.txt", getExeFileName().c_str(), getTimeString().c_str());
 	std::replace(logFn.begin(), logFn.end(), ':', '-');
 	std::replace(logFn.begin(), logFn.end(), ' ', '_');
 	logFn = getInstalledFileName(logFn);
@@ -36,7 +37,7 @@ void PerfTrace::storeResult() {
 
 	outf << "Individual frames (cpu;gpu;effective):\n";
 	for(size_t i = 0; i < l; ++i) {
-		outf << format("%8.4f,%8.4f,%8.4f\n", frame_cpu_times[i], frame_gpu_times[i], frame_eff_times[i]);
+		outf << strFormat("{:8.4f},{:8.4f},{:8.4f}\n", frame_cpu_times[i], frame_gpu_times[i], frame_eff_times[i]);
 	}
 	outf << "\n";
 }

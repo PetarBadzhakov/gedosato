@@ -24,7 +24,7 @@ HRESULT APIENTRY hkIDXGIFactory1::EnumAdapters1(UINT Adapter, IDXGIAdapter1 **pp
 	SDLOG(20, "hkIDXGIFactory1::EnumAdapters1\n");
 	HRESULT res = pWrapped->EnumAdapters1(Adapter, ppAdapter);
 	if(SUCCEEDED(res)) {
-		SDLOG(20, "--> Success, wrapping %p\n", *ppAdapter);
+		SDLOG(20, "--> Success, wrapping {}\n", *ppAdapter);
 		*ppAdapter = InterfaceRegistry::get().getWrappedInterface<IDXGIAdapter1>(*ppAdapter);
 	}
 	return res;

@@ -34,21 +34,20 @@ using std::string;
 
 //#define RELEASE_VER
 
+// SDLOG(level, "std::format string", args...): logged when the logLevel setting is above level.
 #ifndef RELEASE_VER
-#define SDLOG(_level, _str, ...) { \
-	try { if(Settings::get().getLogLevel() > _level) { sdlog(_str, __VA_ARGS__); } } \
-	catch(boost::io::format_error &e) { sdlog("LOGGING ERROR (%s:%d): %s\n", __FILE__, __LINE__, e.what()); } }
+#define SDLOG(_level, ...) { if(Settings::get().getLogLevel() > (_level)) { sdlog(__VA_ARGS__); } }
 #define LOG_CHECK(_level, _code) { if(Settings::get().getLogLevel() > _level) { _code; } }
 #else
-#define SDLOG(_level, _str, ...) {}
+#define SDLOG(_level, ...) {}
 #define LOG_CHECK(_level, _code) {}
 #endif
 #define SAFERELEASE(_p) { if(_p) { \
 	auto __retval = (_p)->Release(); \
-	SDLOG(10, "Saferelease: %p (%u), loc: %s : %d\n", (_p), __retval, __FILE__, __LINE__); \
+	SDLOG(10, "Saferelease: {} ({}), loc: {} : {}\n", (_p), __retval, __FILE__, __LINE__); \
 	(_p) = NULL; } }
-#define SAFEDELETE(_p) { if(_p) { delete (_p); SDLOG(10, "Safedelete: %p, loc: %s : %d\n", (_p), __FILE__, __LINE__); (_p) = nullptr; } }
-#define SAFEDELETEARR(_p) { if(_p) { delete [] (_p); SDLOG(10, "Safedeletearr: %p, loc: %s : %d\n", (_p), __FILE__, __LINE__); (_p) = nullptr; } }
+#define SAFEDELETE(_p) { if(_p) { delete (_p); SDLOG(10, "Safedelete: {}, loc: {} : {}\n", (_p), __FILE__, __LINE__); (_p) = nullptr; } }
+#define SAFEDELETEARR(_p) { if(_p) { delete [] (_p); SDLOG(10, "Safedeletearr: {}, loc: {} : {}\n", (_p), __FILE__, __LINE__); (_p) = nullptr; } }
 
 #define EPSILON (std::numeric_limits<float>::epsilon()*10)
 #define FLT_EQ(__a, __b) (std::abs((__a) - (__b)) <= EPSILON)
@@ -72,15 +71,13 @@ string getTimeString(bool forDisplay = false);
 std::wstring strToWStr(const string& input);
 
 extern FILE* g_oFile;
-inline void sdlog(const char *fmt) {
-	if(!fmt) { return; }
-	fprintf(g_oFile, fmt);
-	fflush(g_oFile);
-}
+
 template<typename... Args>
-inline void sdlog(const char *fmt, const Args&... args) {
-	if(!fmt) { return; }
-	sdlog(format(fmt, args...).c_str());
+void sdlog(FormatString<Args...> fmt, const Args&... args) {
+	if(!g_oFile) return;
+	const string text = strFormat(fmt, args...);
+	fputs(text.c_str(), g_oFile);
+	fflush(g_oFile);
 }
 
 extern "C" __declspec(dllexport) const char* GeDoSaToVersion();

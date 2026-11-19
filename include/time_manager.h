@@ -1,13 +1,15 @@
 #pragma once
 
-#include <boost/noncopyable.hpp>
 #include <memory>
 
 #include "utils/win_utils.h"
 #include "console.h"
 #include "detouring.h"
 
-class TimeManager : boost::noncopyable {
+class TimeManager {
+	TimeManager(const TimeManager&) = delete;
+	TimeManager& operator=(const TimeManager&) = delete;
+
 	static std::unique_ptr<TimeManager> instance;
 
 	bool frozen = false;

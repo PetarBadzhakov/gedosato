@@ -6,7 +6,7 @@
 #include <vector>
 #include <regex>
 using namespace std;
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include <XInput.h>
 
@@ -41,7 +41,7 @@ bool KeyActions::loadBinding(const char* keyName, int keyVal, const string& bstr
 }
 
 void KeyActions::load(const string &fn) {
-	if(!boost::filesystem::exists(fn)) return;
+	if(!std::filesystem::exists(fn)) return;
 	std::ifstream sfile;
 	sfile.open(fn, std::ios::in);
 	char buffer[256];
@@ -86,26 +86,26 @@ void KeyActions::load() {
 void KeyActions::report() {
 	SDLOG(0, "= Loaded Keybindings:\n");
 	for(const auto& elem : keyBindingMap) {
-		SDLOG(0, " - %p => %s\n", elem.first, elem.second.action.c_str());
+		SDLOG(0, " - {} => {}\n", elem.first, elem.second.action.c_str());
 	}
 	SDLOG(0, "= Loaded Button bindings:\n");
 	for(int i = 0; i < 4; ++i) {
 		for(const auto& elem : buttonBindingMap[i]) {
-			SDLOG(0, " - %d : %p => %s\n", i, elem.first, elem.second.c_str());
+			SDLOG(0, " - {} : {} => {}\n", i, elem.first, elem.second.c_str());
 		}
 	}
 	SDLOG(0, "=============\n");
 	
 	SDLOG(5, "= Possible Actions:\n");
 	#define ACTION(_name, _action) \
-	SDLOG(5, "%s, ", #_name);
+	SDLOG(5, "{}, ", #_name);
  	#include "Actions.def"
 	#undef ACTION
 	SDLOG(5, "=============\n");
 	
 	SDLOG(5, "= Possible Keys:\n");
 	#define KEY(_name, _val) \
-	SDLOG(5, "%s, ", #_name);
+	SDLOG(5, "{}, ", #_name);
  	#include "Keys.def"
 	#undef KEY
 	SDLOG(5, "=============\n");
@@ -139,7 +139,7 @@ void KeyActions::processIO() {
 			if(binding.ctrl  && ((GetAsyncKeyState(VK_CONTROL) & 0x8000) == 0)) continue;
 			if(binding.alt   && ((GetAsyncKeyState(VK_MENU)    & 0x8000) == 0)) continue;
 			if(binding.shift && ((GetAsyncKeyState(VK_SHIFT)   & 0x8000) == 0)) continue;
-			SDLOG(0, "Action triggered: %s\n", i->second.action.c_str());
+			SDLOG(0, "Action triggered: {}\n", i->second.action.c_str());
 			performAction(i->second.action.c_str());
 		}
 		binding.downLastFrame = downThisFrame;

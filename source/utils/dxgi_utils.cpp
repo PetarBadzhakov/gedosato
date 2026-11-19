@@ -155,17 +155,17 @@ std::string DxgiUsageToString(const DXGI_USAGE& usage) {
 }
 
 std::string DxgiRationalToString(const DXGI_RATIONAL& rat) {
-	return format("%8.4f", static_cast<double>(rat.Numerator) / (rat.Denominator == 0 ? 1 : rat.Denominator));
+	return strFormat("{:8.4f}", static_cast<double>(rat.Numerator) / (rat.Denominator == 0 ? 1 : rat.Denominator));
 }
 
 std::string DxgiModeDescToString(const DXGI_MODE_DESC& desc) {
-	return format("%4d x %4d @ %s - format: %s, scaling: %s, order: %s",
+	return strFormat("{:4} x {:4} @ {} - format: {}, scaling: {}, order: {}",
 		desc.Width, desc.Height, DxgiRationalToString(desc.RefreshRate), DxgiFormatToString(desc.Format),
 		DxgiModeScalingToString(desc.Scaling), DxgiModeScanlineOrderToString(desc.ScanlineOrdering));
 }
 
 std::string DxgiSwapChainDescToString(const DXGI_SWAP_CHAIN_DESC& desc) {
-	return format(" - windowed: %s, buffers: %d, swap: %s\n", desc.Windowed ? "true" : "false", desc.BufferCount, DxgiSwapEffectToString(desc.SwapEffect))
-		 + format(" - format: %s\n", DxgiModeDescToString(desc.BufferDesc))
-		 + format(" - usage: %s, flags: %p, samples: %d/%d\n", DxgiUsageToString(desc.BufferUsage), desc.Flags, desc.SampleDesc.Count, desc.SampleDesc.Quality);
+	return strFormat(" - windowed: {}, buffers: {}, swap: {}\n", desc.Windowed ? "true" : "false", desc.BufferCount, DxgiSwapEffectToString(desc.SwapEffect))
+		 + strFormat(" - format: {}\n", DxgiModeDescToString(desc.BufferDesc))
+		 + strFormat(" - usage: {}, flags: {}, samples: {}/{}\n", DxgiUsageToString(desc.BufferUsage), desc.Flags, desc.SampleDesc.Count, desc.SampleDesc.Quality);
 }

@@ -9,7 +9,7 @@
 #include "dxgi/dxgiadapter1.h"
 
 hkIDXGIAdapter1::hkIDXGIAdapter1(IDXGIAdapter1 **ppIDXGIAdapter1) {
-	SDLOG(5, "hkIDXGIAdapter1::hkIDXGIAdapter1(%p)\n", *ppIDXGIAdapter1);
+	SDLOG(5, "hkIDXGIAdapter1::hkIDXGIAdapter1({})\n", *ppIDXGIAdapter1);
 	pWrapped = *ppIDXGIAdapter1;
 	*ppIDXGIAdapter1 = this;
 }
